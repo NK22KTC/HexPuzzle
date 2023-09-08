@@ -16,7 +16,7 @@ public class ItemController : MonoBehaviour
     private Vector3 itemLocalPos, itemRotation;
 
     private float rotationTime = 0;
-    private bool isRotation = false;
+    private bool isRotation = false, removeItemOnce = false;
 
     enum RotationMode { Left, Right };
     RotationMode rotationMode;
@@ -24,6 +24,7 @@ public class ItemController : MonoBehaviour
     void Start()
     {
         playerInput = GetComponent<PlayerInput>();
+        //Time.timeScale = 0.2f;
     }
 
     // Update is called once per frame
@@ -42,6 +43,8 @@ public class ItemController : MonoBehaviour
 
     public void OnHoldItem(InputAction.CallbackContext context)
     {
+        mouseContext = context;
+
         if (isRotation) return;
 
         if (context.phase == InputActionPhase.Started)
@@ -57,8 +60,6 @@ public class ItemController : MonoBehaviour
                 itemRotation = movement_Item_Parent.transform.localEulerAngles;
             }
         }
-
-        mouseContext = context;
     }
 
     public void OnRotateItem(InputAction.CallbackContext context)
@@ -80,21 +81,13 @@ public class ItemController : MonoBehaviour
                 itemRotation.z = (int)itemRotation.z - 60;  
                 rotationMode = RotationMode.Right;
             }
-
-            if (itemRotation.z > 360)
-            {
-                itemRotation.z -= 360;
-            }
-            else if (itemRotation.z < 0)
-            {
-                itemRotation.z += 360;
-            }
         }
     }
 
     void HoldingItemControl()
     {
         if (movement_Item_Parent == null) return;
+        if (removeItemOnce) return;
 
         if (mouseContext.phase == InputActionPhase.Started || mouseContext.phase == InputActionPhase.Performed)
         {
@@ -104,7 +97,7 @@ public class ItemController : MonoBehaviour
         else
         {
             movement_Item = null;
-            if(!isRotation) movement_Item_Parent = null;
+            if(!isRotation) movement_Item_Parent = null;    //‘fÞ‚Ì‰ñ“]‚ªI‚í‚é‚Ü‚Åmovement_Item_Parent‚ðnull‚É‚µ‚È‚¢
         }
     }
 
@@ -112,47 +105,36 @@ public class ItemController : MonoBehaviour
     private float currentVelocity;
     void SmoothlyRotate()
     {
-        if (movement_Item_Parent == null) return;
+        if (movement_Item_Parent == null) return;  //‘fÞ‚ð‚Â‚©‚ñ‚Å‚¢‚È‚¢‚Æ‚«movement_Item_Parent‚ªnull‚É‚È‚é
+
+        if (mouseContext.phase == InputActionPhase.Waiting)  //‘fÞ‚ð˜b‚µ‚½uŠÔ
+        {
+            removeItemOnce = true;
+        }
 
         if (movement_Item_Parent.transform.localEulerAngles != itemRotation)
         {
-            if (!isRotation) oldRotation = movement_Item_Parent.transform.localEulerAngles;
+            if (!isRotation) oldRotation = movement_Item_Parent.transform.localEulerAngles;  //Å‰‚Ì1‰ñAoldRotation‚É‰ñ“]‘O‚ÌŠp“x‚ðŠi”[‚·‚é
+
+            if (itemRotation.z == -60 && rotationMode == RotationMode.Right)
+            {
+                itemRotation.z += 360;
+            }
+            if (itemRotation.z == 360 && rotationMode == RotationMode.Left)
+            {
+                itemRotation.z -= 360;
+            }
 
             Vector3 newRotation = oldRotation;
 
-            newRotation.z = Mathf.SmoothDampAngle(movement_Item_Parent.transform.localEulerAngles.z, itemRotation.z, ref currentVelocity, rotationTime, 1000f);
-            Debug.Log("Approximately : " + Mathf.Approximately(newRotation.z, itemRotation.z));  //‚±‚±ƒoƒO‚é
-            if (Mathf.Approximately(newRotation.z, itemRotation.z))
+            newRotation.z = Mathf.SmoothDampAngle(movement_Item_Parent.transform.localEulerAngles.z, itemRotation.z, ref currentVelocity, rotationTime, 1000f);  //ƒXƒ€[ƒY‚É‰ñ“]‚³‚¹‚é
+
+            if (Mathf.Abs(newRotation.z - itemRotation.z) < 0.1f)
             {
+                //‰ñ“]‚ÌI—¹‚Ìˆ—
                 movement_Item_Parent.transform.localEulerAngles = itemRotation;
-
-                if (movement_Item_Parent.transform.localEulerAngles.z <= 0)
-                {
-                    movement_Item_Parent.transform.localEulerAngles
-                        = new Vector3(0, 0, 360);
-                }
-                else if (movement_Item_Parent.transform.localEulerAngles.z >= 360)
-                {
-                    movement_Item_Parent.transform.localEulerAngles
-                        = new Vector3(0, 0, 0);
-                } 
-
                 isRotation = false;
                 return;
-            }
-            else
-            {
-                Debug.Log("newRotation.z : " + newRotation.z);
-                Debug.Log("itemRotation.z : " + itemRotation.z);
-            }
-
-            if(rotationMode == RotationMode.Left && newRotation.z >= 360)
-            {
-                newRotation.z = 0;
-            }
-            else if(rotationMode == RotationMode.Right && newRotation.z <= 0)
-            {
-                newRotation.z = 0;
             }
 
             movement_Item_Parent.transform.localEulerAngles = newRotation;
@@ -163,6 +145,11 @@ public class ItemController : MonoBehaviour
         {
             rotationTime = 0;
             isRotation = false;
+            if(removeItemOnce)
+            {
+                movement_Item_Parent = null;
+            }
+            removeItemOnce = false;
         }
     }
 }
