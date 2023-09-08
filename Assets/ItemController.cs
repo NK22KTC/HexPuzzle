@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -97,7 +96,7 @@ public class ItemController : MonoBehaviour
     {
         if (movement_Item_Parent == null) return;
 
-        if (mouseContext.phase is InputActionPhase.Started or InputActionPhase.Performed)
+        if (mouseContext.phase == InputActionPhase.Started || mouseContext.phase == InputActionPhase.Performed)
         {
             worldMousePosition.z = 0;
             movement_Item_Parent.transform.position = worldMousePosition;
