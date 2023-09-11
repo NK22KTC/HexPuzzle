@@ -6,15 +6,15 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class TitleManager : MonoBehaviour
+public class TitleManager : GameSystems
 {
     [SerializeField]
     GameObject[] displayGroups;
 
     [SerializeField]
-    GameObject fadeImage;
-
-    Color fadeColor;
+    GameObject fadeImageObject;
+    [SerializeField]
+    Image fadeImage;
 
     public enum DisplayGroup { TitleGroup, OptionGroup, HowToOperateGroup };
 
@@ -22,22 +22,29 @@ public class TitleManager : MonoBehaviour
     public DisplayGroup displayingGroup = DisplayGroup.TitleGroup;
     private DisplayGroup nowDisplayingGroup = DisplayGroup.TitleGroup;
 
+    [HideInInspector]
+    public bool startGame = false;
+
     void Awake()
     {
         UpdateDisplayGroup();
     }
 
-    void Start()
-    {
-        fadeColor = fadeImage.GetComponent<Image>().color;
-    }
-
-    void Update()
+    void FixedUpdate()
     {
         if(displayingGroup != nowDisplayingGroup)
         {
             nowDisplayingGroup = displayingGroup;
             UpdateDisplayGroup();
+        }
+
+        if (startGame)
+        {
+            FadeOut(fadeImageObject, fadeImage);
+            if(fadeImage.color.a >= 1)
+            {
+                StartCoroutine(LoadingScene());
+            }
         }
     }
 
@@ -53,23 +60,6 @@ public class TitleManager : MonoBehaviour
             {
                 group.SetActive(false);
             }
-        }
-    }
-
-    public IEnumerator LoadingScene(int loadSceneNum)
-    {
-        fadeImage.SetActive(true);
-
-        Color color = fadeColor;
-        color.a += Time.deltaTime;
-        fadeColor = color;
-
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(loadSceneNum);
-        while (!asyncLoad.isDone && color.a >= 1)
-        {
-            // シーンの読み込みが終わるまでインジケータを表示し回転させる
-            //indicator.transform.Rotate(Vector3.back, 2);
-            yield return null;
         }
     }
 }

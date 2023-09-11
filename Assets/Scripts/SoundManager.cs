@@ -19,17 +19,18 @@ public class SoundManager : SingletonDontDestroy<SoundManager>
     [SerializeField]
     AudioClip[] SE_Clips;
 
-    // Start is called before the first frame update
     void Start()
     {
         optionManager = GetComponent<OptionManager>();
+        for(int i = 0; i < soundSliders.Length; i++)
+        {
+            OnValueChange(i);
+        }
     }
 
-    // Update is called once per frame
     void Update()
     {
         PlayBGM();
-        //ChangeSoundVolume();
     }
 
     public void OnButtonPush(AudioClip clip)
@@ -45,14 +46,6 @@ public class SoundManager : SingletonDontDestroy<SoundManager>
             sources[0].Play();
         }
     }
-
-    //void ChangeSoundVolume()
-    //{
-    //    for (int i = 0; i < soundSliders.Length; i++)
-    //    {
-    //        sources[i].volume = soundSliders[i].value;
-    //    }
-    //}
 
     public void OnValueChange(int i)
     {

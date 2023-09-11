@@ -4,27 +4,25 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class ButtonManager : MonoBehaviour
+public class ButtonManager : GameSystems
 {
     TitleManager titleManager;
 
-    // Start is called before the first frame update
     void Start()
     {
         titleManager = GetComponent<TitleManager>();
     }
 
-    // Update is called once per frame
     void Update()
     {
 
     }
 
-    public void OnDisplayNewGroup(GameObject displayGroup)
+    public void OnDisplayNewGroup(GameObject _displayGroup)
     {
         for(int i = 0; i < Enum.GetValues(typeof(TitleManager.DisplayGroup)).Length; i++)
         {
-            if ( ((TitleManager.DisplayGroup)i).ToString() == displayGroup.name )
+            if ( ((TitleManager.DisplayGroup)i).ToString() == _displayGroup.name )
             {
                 titleManager.displayingGroup = (TitleManager.DisplayGroup)i;
                 return;
@@ -32,5 +30,9 @@ public class ButtonManager : MonoBehaviour
         }
     }
 
-    public void OnStartGame(int loadSceneNum) => StartCoroutine(titleManager.LoadingScene(loadSceneNum));
+    public void OnStartGame(int _loadSceneNum)
+    {
+        titleManager.startGame = true;
+        loadSceneNum = _loadSceneNum;
+    }
 }

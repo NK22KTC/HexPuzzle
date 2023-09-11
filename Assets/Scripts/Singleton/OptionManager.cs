@@ -10,15 +10,31 @@ public class OptionManager : SingletonDontDestroy<OptionManager>
     [SerializeField]
     Slider[] soundSliders;
 
-    // Start is called before the first frame update
+    [SerializeField]
+    InputField[] inputFields;
+
     void Start()
     {
         soundManager = GetComponent<SoundManager>();
+
+        for (int i = 0; i < soundSliders.Length; i++)
+        {
+            ChangedInSlider(i);
+        }
     }
 
-    // Update is called once per frame
     void Update()
     {
         
+    }
+
+    public void ChangedInSlider(int i)
+    {
+        inputFields[i].text = soundSliders[i].value.ToString("F");
+    }
+
+    public void ChangeInInputField(int i)
+    {
+        soundSliders[i].value = float.Parse(inputFields[i].text);
     }
 }

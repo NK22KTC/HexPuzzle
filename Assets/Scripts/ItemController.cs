@@ -12,7 +12,7 @@ public class ItemController : MonoBehaviour
 
     private InputAction.CallbackContext mouseContext;
 
-    private GameObject movement_Item, movement_Item_Parent;
+    private GameObject movementItem, movementItemParent, touchedItem;
     private Vector3 itemLocalPos, itemRotation;
 
     private float rotationTime = 0;
@@ -26,10 +26,8 @@ public class ItemController : MonoBehaviour
     void Start()
     {
         playerInput = GetComponent<PlayerInput>();
-        //Time.timeScale = 0.2f;
     }
 
-    // Update is called once per frame
     void Update()
     {
         HoldingItemControl();
@@ -55,18 +53,18 @@ public class ItemController : MonoBehaviour
 
             if (hit.collider != null)
             {
-                movement_Item = hit.collider.gameObject;
-                movement_Item_Parent = movement_Item.transform.parent.gameObject;
+                movementItem = hit.collider.gameObject;
+                movementItemParent = movementItem.transform.parent.gameObject;
 
-                itemLocalPos = movement_Item.transform.localPosition;
-                itemRotation = movement_Item_Parent.transform.localEulerAngles;
+                itemLocalPos = movementItem.transform.localPosition;
+                itemRotation = movementItemParent.transform.localEulerAngles;
             }
         }
     }
 
     public void OnRotateItem(InputAction.CallbackContext context)
     {
-        if (movement_Item_Parent == null) return;
+        if (movementItemParent == null) return;
         if (isRotation) return;
 
         if(context.started)
@@ -88,38 +86,51 @@ public class ItemController : MonoBehaviour
 
     void HoldingItemControl()
     {
-        if (movement_Item_Parent == null) return;
+        if (movementItemParent == null) return;
         if (removeItemOnce) return;
 
         if (mouseContext.phase == InputActionPhase.Started || mouseContext.phase == InputActionPhase.Performed)
         {
             worldMousePosition.z = -1;
-            movement_Item_Parent.transform.position = worldMousePosition;
+            movementItemParent.transform.position = worldMousePosition;
+
+            touchedItem = movementItemParent;
         }
         else
         {
             worldMousePosition.z = 0;
-            movement_Item_Parent.transform.position = worldMousePosition;
+            movementItemParent.transform.position = worldMousePosition;
 
-            movement_Item = null;
-            if(!isRotation) movement_Item_Parent = null;    //ëfçﬁÇÃâÒì]Ç™èIÇÌÇÈÇ‹Ç≈movement_Item_ParentÇnullÇ…ÇµÇ»Ç¢
+            movementItem = null;
+            if(!isRotation) movementItemParent = null;    //ëfçﬁÇÃâÒì]Ç™èIÇÌÇÈÇ‹Ç≈movement_Item_ParentÇnullÇ…ÇµÇ»Ç¢
         }
+
+        //GameObject[] ItemObjects = FindObjectsOfType<GameObject>();  //ëfçﬁÇÃèdÇ»ÇËÇÇ¢ÇÎÇ¢ÇÎÇ∑ÇÈ
+        //for(int i = 0; i < ItemObjects.Length; i++)
+        //{
+        //    if (ItemObjects[i].CompareTag("ItemObjects") && ItemObjects[i] != touchedItem)
+        //    {
+        //        Vector3 v3 = ItemObjects[i].transform.position;
+        //        v3.z = 1;
+        //        ItemObjects[i].transform.position = v3;
+        //    }
+        //}
     }
 
     Vector3 oldRotation;
     private float currentVelocity;
     void SmoothlyRotate()
     {
-        if (movement_Item_Parent == null) return;  //ëfçﬁÇÇ¬Ç©ÇÒÇ≈Ç¢Ç»Ç¢Ç∆Ç´movement_Item_ParentÇ™nullÇ…Ç»ÇÈ
+        if (movementItemParent == null) return;  //ëfçﬁÇÇ¬Ç©ÇÒÇ≈Ç¢Ç»Ç¢Ç∆Ç´movement_Item_ParentÇ™nullÇ…Ç»ÇÈ
 
         if (mouseContext.phase == InputActionPhase.Waiting)  //ëfçﬁÇòbÇµÇΩèuä‘
         {
             removeItemOnce = true;
         }
 
-        if (movement_Item_Parent.transform.localEulerAngles != itemRotation)
+        if (movementItemParent.transform.localEulerAngles != itemRotation)
         {
-            if (!isRotation) oldRotation = movement_Item_Parent.transform.localEulerAngles;  //ç≈èâÇÃ1âÒÅAoldRotationÇ…âÒì]ëOÇÃäpìxÇäiî[Ç∑ÇÈ
+            if (!isRotation) oldRotation = movementItemParent.transform.localEulerAngles;  //ç≈èâÇÃ1âÒÅAoldRotationÇ…âÒì]ëOÇÃäpìxÇäiî[Ç∑ÇÈ
 
             if (itemRotation.z == -60 && rotationMode == RotationMode.Right)
             {
@@ -132,17 +143,17 @@ public class ItemController : MonoBehaviour
 
             Vector3 newRotation = oldRotation;
 
-            newRotation.z = Mathf.SmoothDampAngle(movement_Item_Parent.transform.localEulerAngles.z, itemRotation.z, ref currentVelocity, rotationTime, rotationSpeed * 1000);  //ÉXÉÄÅ[ÉYÇ…âÒì]Ç≥ÇπÇÈ
+            newRotation.z = Mathf.SmoothDampAngle(movementItemParent.transform.localEulerAngles.z, itemRotation.z, ref currentVelocity, rotationTime, rotationSpeed * 1000);  //ÉXÉÄÅ[ÉYÇ…âÒì]Ç≥ÇπÇÈ
 
             if (Mathf.Abs(newRotation.z - itemRotation.z) < 0.1f)
             {
                 //âÒì]ÇÃèIóπÇÃèàóù
-                movement_Item_Parent.transform.localEulerAngles = itemRotation;
+                movementItemParent.transform.localEulerAngles = itemRotation;
                 isRotation = false;
                 return;
             }
 
-            movement_Item_Parent.transform.localEulerAngles = newRotation;
+            movementItemParent.transform.localEulerAngles = newRotation;
             rotationTime += Time.deltaTime;
             isRotation = true;
         }
@@ -152,7 +163,7 @@ public class ItemController : MonoBehaviour
             isRotation = false;
             if(removeItemOnce)
             {
-                movement_Item_Parent = null;
+                movementItemParent = null;
             }
             removeItemOnce = false;
         }
