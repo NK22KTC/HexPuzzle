@@ -47,13 +47,13 @@ public class ItemController : MonoBehaviour
 
         if (isRotation) return;
 
-        if (context.phase == InputActionPhase.Started)
+        if (context.phase == InputActionPhase.Started)  //ëfçﬁÇÃèàóù
         {
-            RaycastHit2D hit = Physics2D.Raycast(worldMousePosition, Vector2.zero);
+            RaycastHit2D hitItem = Physics2D.Raycast(worldMousePosition, Vector2.zero);
 
-            if (hit.collider != null)
+            if (hitItem.collider != null && hitItem.collider.CompareTag("ItemObject_Piece"))
             {
-                movementItem = hit.collider.gameObject;
+                movementItem = hitItem.collider.gameObject;
                 movementItemParent = movementItem.transform.parent.gameObject;
 
                 itemLocalPos = movementItem.transform.localPosition;

@@ -5,7 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - Workbench
+  - Workbench_Piece
   - ItemObjects
+  - ItemObject_Piece
   layers:
   - Default
   - TransparentFX
