@@ -74,14 +74,6 @@ public class ItemController : MonoBehaviour
         }
     }
 
-    //void SetWorkbench()
-    //{
-    //    if(workbench == null)
-    //    {
-
-    //    }
-    //}
-
     void ChackInstallingToWorkbench()
     {
         if (movementItemParent == null) return;
@@ -93,7 +85,7 @@ public class ItemController : MonoBehaviour
             if (hitWorkbench.collider != null)
             {
                 HexInfomation info_origin = hitWorkbench.collider.GetComponent<HexInfomation>();
-                Debug.Log("R : " + info_origin.r + ", S : " + info_origin.s + ", Q : " + info_origin.q);
+                //Debug.Log("R : " + info_origin.r + ", S : " + info_origin.s + ", Q : " + info_origin.q);
 
                 for(int i = 1;  i < movementItemChilds.Length; i++)
                 {
@@ -106,7 +98,7 @@ public class ItemController : MonoBehaviour
                         r = info_origin.r + info_i.r,
                         s = info_origin.s + info_i.s
                     };
-                    Debug.Log("Q : " + judgeInfo.q + ", R : " + judgeInfo.r + ", S : " + judgeInfo.s);
+                    //Debug.Log("Q : " + judgeInfo.q + ", R : " + judgeInfo.r + ", S : " + judgeInfo.s);
 
                     foreach (GameObject workbenchChild in workbenchChilds)  //ì‹Æ‘ä‚ÌˆÊ’uî•ñ‚Æ”ä‚×‚é
                     {
@@ -116,8 +108,13 @@ public class ItemController : MonoBehaviour
 
                         if (judgeInfo.q == info_w.q && judgeInfo.r == info_w.r && judgeInfo.s == info_w.s)
                         {
-                            Debug.Log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                            //Debug.Log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
                             info_i.canFitting = true;
+                            break;
+                        }
+                        else
+                        {
+                            info_i.canFitting = false;
                         }
                     }
                 }
