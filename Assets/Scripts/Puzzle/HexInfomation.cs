@@ -2,11 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HexInfomation
+public class HexInfomation : MonoBehaviour
 {
-    public Vector2Int hexCoordinates;
-    public bool isFitting = false;
+    [Header("HexVector")]
+    public int q = 0;
+    public int r = 0;
+    public int s = 0;
+    [Space]
+    public int hexRotation = 0;
+    [HideInInspector]
+    public bool canFitting = false, isFitting = false;
+}
+
+public class HexTransform
+{
+    public int r, s, q;
+    //r = 0, 180 の角度の軸, 90度方向に正、270度方向に負
+    //s = 60, 240 の角度の軸, 120度方向に正、300度方向に負
+    //q = 120, 300 の角度の軸, 60度方向に正、240度方向に負
 }
 
 //参考サイト
 //https://qiita.com/41semicolon/items/ad13719222575a6a4940
+//https://www.redblobgames.com/grids/hexagons/

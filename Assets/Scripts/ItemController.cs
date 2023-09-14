@@ -12,7 +12,12 @@ public class ItemController : MonoBehaviour
 
     private InputAction.CallbackContext mouseContext;
 
+    GameObject workbench;
+    [SerializeField]
+    private GameObject[] workbenchChilds;
+
     private GameObject movementItem, movementItemParent, touchedItem;
+    private Transform[] movementItemChilds;
     private Vector3 itemLocalPos, itemRotation;
 
     private float rotationTime = 0;
@@ -33,6 +38,8 @@ public class ItemController : MonoBehaviour
         HoldingItemControl();
 
         SmoothlyRotate();
+
+        ChackInstallingToWorkbench();
     }
 
     // マウス座標が更新された時に通知するコールバック関数
@@ -50,14 +57,83 @@ public class ItemController : MonoBehaviour
         if (context.phase == InputActionPhase.Started)  //素材の処理
         {
             RaycastHit2D hitItem = Physics2D.Raycast(worldMousePosition, Vector2.zero);
-
             if (hitItem.collider != null && hitItem.collider.CompareTag("ItemObject_Piece"))
             {
                 movementItem = hitItem.collider.gameObject;
                 movementItemParent = movementItem.transform.parent.gameObject;
 
+                movementItemChilds = movementItemParent.transform.GetComponentsInChildren<Transform>();
+                foreach (Transform child in movementItemChilds)
+                {
+                    Debug.Log(child.name);
+                }
+
                 itemLocalPos = movementItem.transform.localPosition;
                 itemRotation = movementItemParent.transform.localEulerAngles;
+            }
+        }
+    }
+
+    //void SetWorkbench()
+    //{
+    //    if(workbench == null)
+    //    {
+
+    //    }
+    //}
+
+    void ChackInstallingToWorkbench()
+    {
+        if (movementItemParent == null) return;
+
+        if (mouseContext.phase != InputActionPhase.Canceled)  //作業台の処理
+        {
+            int mask = 1 << 7;  //Layer7にWorkbenchを設定
+            RaycastHit2D hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
+            if (hitWorkbench.collider != null)
+            {
+                HexInfomation info_origin = hitWorkbench.collider.GetComponent<HexInfomation>();
+                Debug.Log("R : " + info_origin.r + ", S : " + info_origin.s + ", Q : " + info_origin.q);
+
+                for(int i = 1;  i < info_origin.r; i++)
+                {
+                    HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();  //まず素材の位置情報を取得する
+                    Debug.Log("Q : " + info_i.q + ", R : " + info_i.r + ", S : " + info_i.s);
+
+                    HexInfomation judgeInfo = new HexInfomation();
+                    judgeInfo.q = info_origin.q + info_i.q;
+                    judgeInfo.r = info_origin.r + info_i.r;
+                    judgeInfo.s = info_origin.s + info_i.s;
+                    Debug.Log("Q : " + judgeInfo.q + ", R : " + judgeInfo.r + ", S : " + judgeInfo.s);
+
+                    foreach (GameObject workbenchChild in workbenchChilds)  //作業台の位置情報と比べる
+                    {
+                        HexInfomation info_w = workbenchChild.GetComponent<HexInfomation>();
+                        Debug.Log("R : " + info_w.r + ", S : " + info_w.s + ", Q : " + info_w.q);
+                        Debug.Log("R : " + judgeInfo.r + ", S : " + judgeInfo.s + ", Q : " + judgeInfo.q);
+
+                        if (judgeInfo.q == info_w.q && judgeInfo.r == info_w.r && judgeInfo.s == info_w.s)
+                        {
+                            Debug.Log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                            info_i.canFitting = true;
+                        }
+                    }
+                }
+
+                int canFittingNum = 0;
+                for (int i = 1; i < info_origin.r; i++)
+                {
+                    HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();
+                    if (info_i.canFitting)
+                    {
+                        canFittingNum++;
+                    }
+                }
+                Debug.Log(canFittingNum + "個");
+                if(canFittingNum == movementItemChilds.Length)
+                {
+                    Debug.Log("置けます");
+                }
             }
         }
     }
