@@ -95,22 +95,24 @@ public class ItemController : MonoBehaviour
                 HexInfomation info_origin = hitWorkbench.collider.GetComponent<HexInfomation>();
                 Debug.Log("R : " + info_origin.r + ", S : " + info_origin.s + ", Q : " + info_origin.q);
 
-                for(int i = 1;  i < info_origin.r; i++)
+                for(int i = 1;  i < movementItemChilds.Length; i++)
                 {
                     HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();  //Ç‹Ç∏ëfçﬁÇÃà íuèÓïÒÇéÊìæÇ∑ÇÈ
-                    Debug.Log("Q : " + info_i.q + ", R : " + info_i.r + ", S : " + info_i.s);
+                    //Debug.Log("Q : " + info_i.q + ", R : " + info_i.r + ", S : " + info_i.s);
 
-                    HexInfomation judgeInfo = new HexInfomation();
-                    judgeInfo.q = info_origin.q + info_i.q;
-                    judgeInfo.r = info_origin.r + info_i.r;
-                    judgeInfo.s = info_origin.s + info_i.s;
+                    HexInfomation judgeInfo = new HexInfomation
+                    {
+                        q = info_origin.q + info_i.q,
+                        r = info_origin.r + info_i.r,
+                        s = info_origin.s + info_i.s
+                    };
                     Debug.Log("Q : " + judgeInfo.q + ", R : " + judgeInfo.r + ", S : " + judgeInfo.s);
 
                     foreach (GameObject workbenchChild in workbenchChilds)  //çÏã∆ë‰ÇÃà íuèÓïÒÇ∆î‰Ç◊ÇÈ
                     {
                         HexInfomation info_w = workbenchChild.GetComponent<HexInfomation>();
-                        Debug.Log("R : " + info_w.r + ", S : " + info_w.s + ", Q : " + info_w.q);
-                        Debug.Log("R : " + judgeInfo.r + ", S : " + judgeInfo.s + ", Q : " + judgeInfo.q);
+                        //Debug.Log("R : " + info_w.r + ", S : " + info_w.s + ", Q : " + info_w.q);
+                        //Debug.Log("R : " + judgeInfo.r + ", S : " + judgeInfo.s + ", Q : " + judgeInfo.q);
 
                         if (judgeInfo.q == info_w.q && judgeInfo.r == info_w.r && judgeInfo.s == info_w.s)
                         {
@@ -121,7 +123,7 @@ public class ItemController : MonoBehaviour
                 }
 
                 int canFittingNum = 0;
-                for (int i = 1; i < info_origin.r; i++)
+                for (int i = 1; i < movementItemChilds.Length; i++)
                 {
                     HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();
                     if (info_i.canFitting)
@@ -130,7 +132,7 @@ public class ItemController : MonoBehaviour
                     }
                 }
                 Debug.Log(canFittingNum + "å¬");
-                if(canFittingNum == movementItemChilds.Length)
+                if(canFittingNum == movementItemChilds.Length-1)
                 {
                     Debug.Log("íuÇØÇ‹Ç∑");
                 }
