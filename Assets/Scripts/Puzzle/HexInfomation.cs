@@ -12,15 +12,14 @@ public class HexInfomation : MonoBehaviour
     public int hexRotation = 0;
     [HideInInspector]
     public bool canFitting = false, isFitting = false;
+    [HideInInspector]
+    public GameObject fittingTarget = null;
 }
 
-public class HexTransform
-{
-    public int r, s, q;
-    //r = 0, 180 の角度の軸, 90度方向に正、270度方向に負
-    //s = 60, 240 の角度の軸, 120度方向に正、300度方向に負
-    //q = 120, 300 の角度の軸, 60度方向に正、240度方向に負
-}
+//r = 0, 180 の角度の軸, 90度方向に正、270度方向に負
+//s = 60, 240 の角度の軸, 120度方向に正、300度方向に負
+//q = 120, 300 の角度の軸, 60度方向に正、240度方向に負
+
 
 //参考サイト
 //https://qiita.com/41semicolon/items/ad13719222575a6a4940

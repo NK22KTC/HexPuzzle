@@ -18,26 +18,48 @@ public class ItemController : MonoBehaviour
 
     private GameObject movementItem, movementItemParent, touchedItem;
     private Transform[] movementItemChilds;
-    private Vector3 itemLocalPos, itemRotation;
+    private Vector3 itemRotation;
 
     private float rotationTime = 0;
     [SerializeField]
     float rotationSpeed = 1.5f;
     private bool isRotation = false, removeItemOnce = false;
 
+    //ç≈å„Ç…éùÇ¡ÇƒÇ¢ÇΩëfçﬁÇì¸ÇÍÇÈïœêî
+    GameObject heldItem;
+
+    //ChackInstallingToWorkbenchì‡Ç≈ÇÃÇ›égÇ§
+    HexInfomation judgeInfo;
+
+    bool canDoFitting = false;
+
     enum RotationMode { Left, Right };
     RotationMode rotationMode;
+
+    //SmoothlyRotateì‡Ç≈ÇÃÇ›Ç≈égÇ§ïœêî
+    Vector3 oldRotation;
+    private float currentVelocity;
+
+    private void Awake()
+    {
+        Application.targetFrameRate = 120;
+    }
 
     void Start()
     {
         playerInput = GetComponent<PlayerInput>();
+        judgeInfo = GetComponent<HexInfomation>();
     }
 
-    void Update()
+    void FixedUpdate()
     {
+        ChangeLayer();
+
         HoldingItemControl();
 
         SmoothlyRotate();
+
+        PutOnWorkbench();
 
         ChackInstallingToWorkbench();
     }
@@ -51,64 +73,74 @@ public class ItemController : MonoBehaviour
     public void OnHoldItem(InputAction.CallbackContext context)
     {
         mouseContext = context;
-
         if (isRotation) return;
 
         if (context.phase == InputActionPhase.Started)  //ëfçﬁÇÃèàóù
         {
             RaycastHit2D hitItem = Physics2D.Raycast(worldMousePosition, Vector2.zero);
+
             if (hitItem.collider != null && hitItem.collider.CompareTag("ItemObject_Piece"))
             {
                 movementItem = hitItem.collider.gameObject;
                 movementItemParent = movementItem.transform.parent.gameObject;
 
-                movementItemChilds = movementItemParent.transform.GetComponentsInChildren<Transform>();
-                foreach (Transform child in movementItemChilds)
-                {
-                    Debug.Log(child.name);
-                }
+                movementItemChilds = movementItemParent.transform.GetComponentsInChildren<Transform>();  //index0 Ç…êeÉIÉuÉWÉFÉNÉgÇ™ì¸ÇÈ
 
-                itemLocalPos = movementItem.transform.localPosition;
                 itemRotation = movementItemParent.transform.localEulerAngles;
+
+                heldItem = movementItemParent;
+
+                for (int i = 1; i < movementItemChilds.Length; i++)
+                {
+                    HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();  //çÏã∆ë‰Ç…ÇÕÇ‹Ç¡ÇƒÇ¢ÇΩÇ©ÇämîF
+                    if (info_i.fittingTarget != null)
+                    {
+                        HexInfomation info_w = info_i.fittingTarget.GetComponent<HexInfomation>();
+                        info_i.isFitting = false;
+                        info_i.fittingTarget = null;
+                        info_w.isFitting = false;
+                        info_w.fittingTarget = null;
+                    }
+                }
             }
         }
     }
 
-    void ChackInstallingToWorkbench()
+    void ChackInstallingToWorkbench()  //çÏã∆ë‰Ç…ëfçﬁÇíuÇØÇÈÇ©ÇämîFÇ∑ÇÈ
     {
         if (movementItemParent == null) return;
 
         if (mouseContext.phase != InputActionPhase.Canceled)  //çÏã∆ë‰ÇÃèàóù
         {
             int mask = 1 << 7;  //Layer7Ç…WorkbenchÇê›íË
-            RaycastHit2D hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
-            if (hitWorkbench.collider != null)
+            RaycastHit2D _hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
+            if (_hitWorkbench.collider != null)
             {
-                HexInfomation info_origin = hitWorkbench.collider.GetComponent<HexInfomation>();
+                HexInfomation info_origin = _hitWorkbench.collider.GetComponent<HexInfomation>();
                 //Debug.Log("R : " + info_origin.r + ", S : " + info_origin.s + ", Q : " + info_origin.q);
 
                 for(int i = 1;  i < movementItemChilds.Length; i++)
                 {
                     HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();  //Ç‹Ç∏ëfçﬁÇÃà íuèÓïÒÇéÊìæÇ∑ÇÈ
-                    //Debug.Log("Q : " + info_i.q + ", R : " + info_i.r + ", S : " + info_i.s);
+                    //Debug.Log(movementItemChilds[i].name);
 
-                    HexInfomation judgeInfo = new HexInfomation
-                    {
-                        q = info_origin.q + info_i.q,
-                        r = info_origin.r + info_i.r,
-                        s = info_origin.s + info_i.s
-                    };
-                    //Debug.Log("Q : " + judgeInfo.q + ", R : " + judgeInfo.r + ", S : " + judgeInfo.s);
+                    judgeInfo.q = info_origin.q + info_i.q;
+                    judgeInfo.r = info_origin.r + info_i.r;
+                    judgeInfo.s = info_origin.s + info_i.s;
 
                     foreach (GameObject workbenchChild in workbenchChilds)  //çÏã∆ë‰ÇÃà íuèÓïÒÇ∆î‰Ç◊ÇÈ
                     {
                         HexInfomation info_w = workbenchChild.GetComponent<HexInfomation>();
-                        //Debug.Log("R : " + info_w.r + ", S : " + info_w.s + ", Q : " + info_w.q);
-                        //Debug.Log("R : " + judgeInfo.r + ", S : " + judgeInfo.s + ", Q : " + judgeInfo.q);
 
                         if (judgeInfo.q == info_w.q && judgeInfo.r == info_w.r && judgeInfo.s == info_w.s)
                         {
-                            //Debug.Log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                            //Debug.Log(info_w.isFitting);
+                            if (info_w.isFitting)  //Ç∑Ç≈Ç…ëfçﬁÇ™ÇÕÇ‹Ç¡ÇƒÇ¢ÇÈèÛë‘Ç»ÇÁ
+                            {
+                                info_i.canFitting = false;
+                                continue;
+                            }
+
                             info_i.canFitting = true;
                             break;
                         }
@@ -128,10 +160,104 @@ public class ItemController : MonoBehaviour
                         canFittingNum++;
                     }
                 }
-                Debug.Log(canFittingNum + "å¬");
+
                 if(canFittingNum == movementItemChilds.Length-1)
                 {
-                    Debug.Log("íuÇØÇ‹Ç∑");
+                    //Debug.Log("íuÇØÇ‹Ç∑");
+                    canDoFitting = true;
+                }
+                else
+                {
+                    canDoFitting = false;
+                }
+            }
+        }
+    }
+
+    void PutOnWorkbench()  //çÏã∆ë‰Ç…ëfçﬁÇíuÇ≠
+    {
+        if (heldItem == null) return;
+        if (movementItemParent == null) return;
+        int mask = 1 << 7;  //Layer7Ç…WorkbenchÇê›íË
+        RaycastHit2D _hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
+        if (!_hitWorkbench)
+        {
+            canDoFitting = false;
+        }
+
+        if (mouseContext.phase == InputActionPhase.Waiting && canDoFitting)  //ëfçﬁÇó£ÇµÇΩíºå„ÇÃèàóùÇèëÇ≠
+        {
+            Vector3 fitPos = _hitWorkbench.transform.position;
+            fitPos.z = movementItemParent.transform.position.z;
+            movementItemParent.transform.position = fitPos;
+
+            HexInfomation info_origin = _hitWorkbench.collider.GetComponent<HexInfomation>();
+            for (int i = 1; i < movementItemChilds.Length; i++)
+            {
+                HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();  //Ç‹Ç∏ëfçﬁÇÃà íuèÓïÒÇéÊìæÇ∑ÇÈ
+                judgeInfo.q = info_origin.q + info_i.q;
+                judgeInfo.r = info_origin.r + info_i.r;
+                judgeInfo.s = info_origin.s + info_i.s;
+
+                foreach (GameObject workbenchChild in workbenchChilds)  //çÏã∆ë‰ÇÃà íuèÓïÒÇ∆î‰Ç◊ÇÈ
+                {
+                    HexInfomation info_w = workbenchChild.GetComponent<HexInfomation>();
+
+                    if (judgeInfo.q == info_w.q && judgeInfo.r == info_w.r && judgeInfo.s == info_w.s)
+                    {
+                        info_i.isFitting = true;
+                        info_i.fittingTarget = info_w.gameObject;
+                        info_w.isFitting = true;
+                        info_w.fittingTarget = info_i.gameObject;
+                        info_i.canFitting = false;
+                        //Debug.Log(info_i.isFitting);
+                        break;
+                    }
+
+                }
+                info_i.canFitting = false;
+            }
+
+            movementItemParent = null;
+            movementItemChilds = new Transform[0];
+
+        }
+        canDoFitting = false;
+        removeItemOnce = false;
+    }
+
+    void ChangeLayer()
+    {
+        if (movementItemChilds != null)
+        {
+            for (int i = 1; i < movementItemChilds.Length; i++)
+            {
+                if (mouseContext.phase == InputActionPhase.Performed)
+                {
+                    movementItemChilds[i].GetComponent<SpriteRenderer>().sortingOrder = 4;
+                }
+                else if (mouseContext.phase == InputActionPhase.Waiting)
+                {
+                    movementItemChilds[i].GetComponent<SpriteRenderer>().sortingOrder = 3;
+                }
+            }
+        }
+
+
+        HexInfomation[] Items = FindObjectsOfType<HexInfomation>();
+
+        for (int i = 0; i < Items.Length; i++)
+        {
+            GameObject _gameObject = Items[i].gameObject;
+            if (_gameObject.CompareTag("ItemObject_Piece"))
+            {
+                if (Items[i].isFitting)
+                {
+                    _gameObject.GetComponent<SpriteRenderer>().sortingOrder = 1;
+                }
+                else if (_gameObject.transform.parent.gameObject != heldItem)
+                {
+                    _gameObject.GetComponent<SpriteRenderer>().sortingOrder = 2;
                 }
             }
         }
@@ -156,11 +282,29 @@ public class ItemController : MonoBehaviour
                 itemRotation.z = (int)itemRotation.z - 60;  
                 rotationMode = RotationMode.Right;
             }
+
+            for(int i = 1; i < movementItemChilds.Length; i++)
+            {
+                HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();
+
+                if(rotationMode == RotationMode.Right)
+                {
+                    (info_i.q, info_i.r, info_i.s) = (-info_i.r, -info_i.s, -info_i.q);
+                }
+                else
+                {
+                    (info_i.q, info_i.r, info_i.s) = (-info_i.s, -info_i.q, -info_i.r);
+                }
+            }
+            
         }
     }
 
     void HoldingItemControl()
     {
+        //Debug.Log("movementItemParent is " + movementItemParent);
+        //Debug.Log("removeItemOnce is " + removeItemOnce);
+
         if (movementItemParent == null) return;
         if (removeItemOnce) return;
 
@@ -177,23 +321,11 @@ public class ItemController : MonoBehaviour
             movementItemParent.transform.position = worldMousePosition;
 
             movementItem = null;
-            if(!isRotation) movementItemParent = null;    //ëfçﬁÇÃâÒì]Ç™èIÇÌÇÈÇ‹Ç≈movement_Item_ParentÇnullÇ…ÇµÇ»Ç¢
+            if(!isRotation && !canDoFitting) movementItemParent = null;    //ëfçﬁÇÃâÒì]Ç™èIÇÌÇÈÇ‹Ç≈movement_Item_ParentÇnullÇ…ÇµÇ»Ç¢
         }
-
-        //GameObject[] ItemObjects = FindObjectsOfType<GameObject>();  //ëfçﬁÇÃèdÇ»ÇËÇÇ¢ÇÎÇ¢ÇÎÇ∑ÇÈ
-        //for(int i = 0; i < ItemObjects.Length; i++)
-        //{
-        //    if (ItemObjects[i].CompareTag("ItemObjects") && ItemObjects[i] != touchedItem)
-        //    {
-        //        Vector3 v3 = ItemObjects[i].transform.position;
-        //        v3.z = 1;
-        //        ItemObjects[i].transform.position = v3;
-        //    }
-        //}
     }
 
-    Vector3 oldRotation;
-    private float currentVelocity;
+    
     void SmoothlyRotate()
     {
         if (movementItemParent == null) return;  //ëfçﬁÇÇ¬Ç©ÇÒÇ≈Ç¢Ç»Ç¢Ç∆Ç´movement_Item_ParentÇ™nullÇ…Ç»ÇÈ
@@ -205,22 +337,25 @@ public class ItemController : MonoBehaviour
 
         if (movementItemParent.transform.localEulerAngles != itemRotation)
         {
-            if (!isRotation) oldRotation = movementItemParent.transform.localEulerAngles;  //ç≈èâÇÃ1âÒÅAoldRotationÇ…âÒì]ëOÇÃäpìxÇäiî[Ç∑ÇÈ
+            if (!removeItemOnce)
+            {
+                if (!isRotation) oldRotation = movementItemParent.transform.localEulerAngles;  //ç≈èâÇÃ1âÒÅAoldRotationÇ…âÒì]ëOÇÃäpìxÇäiî[Ç∑ÇÈ
 
-            if (itemRotation.z == -60 && rotationMode == RotationMode.Right)
-            {
-                itemRotation.z += 360;
-            }
-            if (itemRotation.z == 360 && rotationMode == RotationMode.Left)
-            {
-                itemRotation.z -= 360;
+                if (itemRotation.z == -60 && rotationMode == RotationMode.Right)
+                {
+                    itemRotation.z += 360;
+                }
+                if (itemRotation.z == 360 && rotationMode == RotationMode.Left)
+                {
+                    itemRotation.z -= 360;
+                }
             }
 
             Vector3 newRotation = oldRotation;
 
             newRotation.z = Mathf.SmoothDampAngle(movementItemParent.transform.localEulerAngles.z, itemRotation.z, ref currentVelocity, rotationTime, rotationSpeed * 1000);  //ÉXÉÄÅ[ÉYÇ…âÒì]Ç≥ÇπÇÈ
 
-            if (Mathf.Abs(newRotation.z - itemRotation.z) < 0.1f)
+            if (Mathf.Abs(newRotation.z - itemRotation.z) < 0.1f || removeItemOnce)
             {
                 //âÒì]ÇÃèIóπÇÃèàóù
                 movementItemParent.transform.localEulerAngles = itemRotation;
@@ -229,7 +364,7 @@ public class ItemController : MonoBehaviour
             }
 
             movementItemParent.transform.localEulerAngles = newRotation;
-            rotationTime += Time.deltaTime;
+            rotationTime += Time.fixedDeltaTime;
             isRotation = true;
         }
         else if(rotationTime != 0)
