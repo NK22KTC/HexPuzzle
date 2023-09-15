@@ -40,18 +40,13 @@ public class ItemController : MonoBehaviour
     Vector3 oldRotation;
     private float currentVelocity;
 
-    private void Awake()
-    {
-        Application.targetFrameRate = 120;
-    }
-
     void Start()
     {
         playerInput = GetComponent<PlayerInput>();
         judgeInfo = GetComponent<HexInfomation>();
     }
 
-    void FixedUpdate()
+    void Update()
     {
         ChangeLayer();
 
@@ -364,7 +359,7 @@ public class ItemController : MonoBehaviour
             }
 
             movementItemParent.transform.localEulerAngles = newRotation;
-            rotationTime += Time.fixedDeltaTime;
+            rotationTime += Time.deltaTime;
             isRotation = true;
         }
         else if(rotationTime != 0)
