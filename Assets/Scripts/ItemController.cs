@@ -7,16 +7,15 @@ public class ItemController : MonoBehaviour
 {
     PlayerInput playerInput;
 
-
     private Vector3 worldMousePosition;
 
     private InputAction.CallbackContext mouseContext;
 
     GameObject workbench;
-    [SerializeField]
-    private GameObject[] workbenchChilds;
+    private Transform[] workbenchChilds;
 
-    private GameObject movementItem, movementItemParent, touchedItem;
+    private GameObject movementItem, touchedItem;
+    internal GameObject movementItemParent;
     private Transform[] movementItemChilds;
     private Vector3 itemRotation;
 
@@ -31,7 +30,7 @@ public class ItemController : MonoBehaviour
     //ChackInstallingToWorkbench内でのみ使う
     HexInfomation judgeInfo;
 
-    bool canDoFitting = false;
+    internal bool canDoFitting = false;
 
     enum RotationMode { Left, Right };
     RotationMode rotationMode;
@@ -44,10 +43,16 @@ public class ItemController : MonoBehaviour
     {
         playerInput = GetComponent<PlayerInput>();
         judgeInfo = GetComponent<HexInfomation>();
+        SetWorkbench();
     }
 
     void Update()
     {
+        if(workbench == null)
+        {
+            SetWorkbench();
+        }
+
         ChangeLayer();
 
         HoldingItemControl();
@@ -101,58 +106,49 @@ public class ItemController : MonoBehaviour
         }
     }
 
+    void SetWorkbench()
+    {
+        workbench = GameObject.FindWithTag("Workbench");
+        workbenchChilds = workbench.GetComponentsInChildren<Transform>();
+    }
+
     void ChackInstallingToWorkbench()  //作業台に素材を置けるかを確認する
     {
         if (movementItemParent == null) return;
 
         if (mouseContext.phase != InputActionPhase.Canceled)  //作業台の処理
         {
+            int canFittingNum = 0;
+
             int mask = 1 << 7;  //Layer7にWorkbenchを設定
             RaycastHit2D _hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
             if (_hitWorkbench.collider != null)
             {
                 HexInfomation info_origin = _hitWorkbench.collider.GetComponent<HexInfomation>();
-                //Debug.Log("R : " + info_origin.r + ", S : " + info_origin.s + ", Q : " + info_origin.q);
 
-                for(int i = 1;  i < movementItemChilds.Length; i++)
+                for (int i = 1; i < workbenchChilds.Length; i++)
                 {
-                    HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();  //まず素材の位置情報を取得する
-                    //Debug.Log(movementItemChilds[i].name);
+                    HexInfomation info_w = workbenchChilds[i].GetComponent<HexInfomation>();
 
-                    judgeInfo.q = info_origin.q + info_i.q;
-                    judgeInfo.r = info_origin.r + info_i.r;
-                    judgeInfo.s = info_origin.s + info_i.s;
-
-                    foreach (GameObject workbenchChild in workbenchChilds)  //作業台の位置情報と比べる
+                    for (int j = 1; j < movementItemChilds.Length; j++)
                     {
-                        HexInfomation info_w = workbenchChild.GetComponent<HexInfomation>();
+                        HexInfomation info_i = movementItemChilds[j].GetComponent<HexInfomation>();  //素材の位置情報を取得する
+                        judgeInfo.q = info_origin.q + info_i.q;
+                        judgeInfo.r = info_origin.r + info_i.r;
+                        judgeInfo.s = info_origin.s + info_i.s;
 
-                        if (judgeInfo.q == info_w.q && judgeInfo.r == info_w.r && judgeInfo.s == info_w.s)
+                        if(judgeInfo.q == info_w.q && judgeInfo.r == info_w.r && judgeInfo.s == info_w.s && !info_w.isFitting)
                         {
-                            //Debug.Log(info_w.isFitting);
-                            if (info_w.isFitting)  //すでに素材がはまっている状態なら
-                            {
-                                info_i.canFitting = false;
-                                continue;
-                            }
-
                             info_i.canFitting = true;
+                            info_w.canFitting = true;
+                            canFittingNum++;
                             break;
                         }
                         else
                         {
                             info_i.canFitting = false;
+                            info_w.canFitting = false;
                         }
-                    }
-                }
-
-                int canFittingNum = 0;
-                for (int i = 1; i < movementItemChilds.Length; i++)
-                {
-                    HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();
-                    if (info_i.canFitting)
-                    {
-                        canFittingNum++;
                     }
                 }
 
@@ -165,6 +161,15 @@ public class ItemController : MonoBehaviour
                 {
                     canDoFitting = false;
                 }
+            }
+            else
+            {
+                for (int i = 1; i < workbenchChilds.Length; i++)
+                {
+                    HexInfomation info_w = workbenchChilds[i].GetComponent<HexInfomation>();
+                    info_w.canFitting = false;
+                }
+                canDoFitting = false;
             }
         }
     }
@@ -194,18 +199,17 @@ public class ItemController : MonoBehaviour
                 judgeInfo.r = info_origin.r + info_i.r;
                 judgeInfo.s = info_origin.s + info_i.s;
 
-                foreach (GameObject workbenchChild in workbenchChilds)  //作業台の位置情報と比べる
+                for (int j = 1; j < workbenchChilds.Length; j++)  //作業台の位置情報と比べる
                 {
-                    HexInfomation info_w = workbenchChild.GetComponent<HexInfomation>();
+                    HexInfomation info_w = workbenchChilds[j].GetComponent<HexInfomation>();
 
                     if (judgeInfo.q == info_w.q && judgeInfo.r == info_w.r && judgeInfo.s == info_w.s)
                     {
                         info_i.isFitting = true;
-                        info_i.fittingTarget = info_w.gameObject;
                         info_w.isFitting = true;
+                        info_i.fittingTarget = info_w.gameObject;
                         info_w.fittingTarget = info_i.gameObject;
                         info_i.canFitting = false;
-                        //Debug.Log(info_i.isFitting);
                         break;
                     }
 
@@ -291,7 +295,7 @@ public class ItemController : MonoBehaviour
                     (info_i.q, info_i.r, info_i.s) = (-info_i.s, -info_i.q, -info_i.r);
                 }
             }
-            
+            //SmoothlyRotate();
         }
     }
 
@@ -320,7 +324,6 @@ public class ItemController : MonoBehaviour
         }
     }
 
-    
     void SmoothlyRotate()
     {
         if (movementItemParent == null) return;  //素材をつかんでいないときmovement_Item_Parentがnullになる
@@ -361,6 +364,7 @@ public class ItemController : MonoBehaviour
             movementItemParent.transform.localEulerAngles = newRotation;
             rotationTime += Time.deltaTime;
             isRotation = true;
+            //Invoke("SmoothlyRotate", Time.deltaTime);
         }
         else if(rotationTime != 0)
         {
