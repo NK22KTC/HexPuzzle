@@ -8,8 +8,8 @@ public class HexInfomation : MonoBehaviour
     public int q = 0;
     public int r = 0;
     public int s = 0;
-    [Space]
-    public int hexRotation = 0;
+    //[Space]
+    //public int hexRotation = 0;
     [HideInInspector]
     public bool canFitting = false, isFitting = false;
     [HideInInspector]

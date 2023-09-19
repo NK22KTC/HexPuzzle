@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3198890968939314405}
+  - component: {fileID: 7049763763996932983}
   m_Layer: 0
   m_Name: Ichigo
   m_TagString: ItemObjects
@@ -34,6 +35,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7049763763996932983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3198890968939314406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77d6c868f46261140a0bb71284b0392b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Color: 0
 --- !u!1001 &3198890968135146454
 PrefabInstance:
   m_ObjectHideFlags: 0
