@@ -58,6 +58,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ChangeShelf",
+                    "type": "PassThrough",
+                    "id": "eb572f08-0fc0-4e39-9813-b619e6750e30",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -322,6 +331,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Rotate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "966864a9-194b-471c-a7cf-80c15a97133d",
+                    "path": "<Keyboard>/f",
+                    "interactions": "Press(pressPoint=0.01)",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ChangeShelf",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
