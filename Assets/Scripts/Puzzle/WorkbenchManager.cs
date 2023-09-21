@@ -1,15 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WorkbenchManager : MonoBehaviour
 {
-
     ItemController itemController;
     GameObject workbench, item;
     Transform[] itemChilds;
     Transform[] workbenchChilds;
     List<ItemInfomation> installingItems = new List<ItemInfomation>();
+    Button finishButton;
+
     int itemPieceNum = 0;
 
     bool completedMixing = false;
@@ -20,6 +22,9 @@ public class WorkbenchManager : MonoBehaviour
     {
         GameObject camera = Camera.main.gameObject;
         itemController = camera.GetComponent<ItemController>();
+
+        finishButton = FindObjectOfType<Button>();  //É{É^ÉìÇ™ëùÇ¶ÇΩÇÁïœÇ¶ÇÈ
+        finishButton.onClick.AddListener(() => OnFinishMixing());
 
         SetWorkbench();
     }
@@ -99,12 +104,12 @@ public class WorkbenchManager : MonoBehaviour
     {
         itemPieceNum = 0;  //èâä˙âª
 
-        List<ItemInfomation.ItemColor> puttingItemColors = new List<ItemInfomation.ItemColor>();
+        List<ItemInfomation.ItemTaste> puttingItemColors = new List<ItemInfomation.ItemTaste>();
 
         foreach (ItemInfomation installingItem in installingItems)
         {
-            puttingItemColors.Add(installingItem.Color);
-            Debug.Log(installingItem.Color);
+            puttingItemColors.Add(installingItem.taste);
+            Debug.Log(installingItem.taste);
 
             var itemPieces = installingItem.transform.GetComponentsInChildren<Transform>();
 
@@ -112,10 +117,16 @@ public class WorkbenchManager : MonoBehaviour
             {
                 itemPieceNum++;
             }
+            Destroy(installingItem.gameObject);
         }
-        
-        ScoreManager.instance.score = itemPieceNum;
-        Debug.Log(ScoreManager.instance.score);
+
+        GameManager.instance.score += itemPieceNum;
+        Debug.Log(GameManager.instance.score);
         completedMixing = false;
+
+        for (int i = 1; i < workbenchChilds.Length; i++)
+        {
+            workbenchChilds[i].GetComponent<HexInfomation>().isFitting = false;
+        }
     }
 }

@@ -7,7 +7,8 @@ using UnityEngine.UI;
 public class GameSystems : MonoBehaviour
 {
     float fadeTime = 2f;
-    public static int loadSceneNum;
+
+    public static int loadSceneNum = 0;
 
     public void FadeIn(GameObject fadeImageObject, Image fadeImage)
     {

@@ -82,15 +82,22 @@ public class ItemController : MonoBehaviour
         {
             RaycastHit2D hitItem = Physics2D.Raycast(worldMousePosition, Vector2.zero);
 
-            if (hitItem.collider != null && hitItem.collider.CompareTag("ItemObject_Piece"))
+            if (hitItem.collider != null)
             {
-                movementItem = hitItem.collider.gameObject;
-                movementItemParent = movementItem.transform.parent.gameObject;
+                if (hitItem.collider.CompareTag("ItemObject_Piece"))
+                {
+                    movementItem = hitItem.collider.gameObject;
+                    movementItemParent = movementItem.transform.parent.gameObject;
+                }
+                else if (hitItem.collider.CompareTag("ItemSample"))
+                {
+                    ItemInfomation info = hitItem.transform.parent.GetComponent<ItemInfomation>();
+                    GameObject newObject = Instantiate(info.instantiateObject);
+                    movementItemParent = newObject;
+                }
 
                 movementItemChilds = movementItemParent.transform.GetComponentsInChildren<Transform>();  //index0 に親オブジェクトが入る
-
                 itemRotation = movementItemParent.transform.localEulerAngles;
-
                 heldItem = movementItemParent;
 
                 movementItemParent.GetComponent<ItemInfomation>().isFitting = false;
@@ -353,15 +360,6 @@ public class ItemController : MonoBehaviour
             if (!removeItemOnce)
             {
                 if (!isRotation) oldRotation = movementItemParent.transform.localEulerAngles;  //最初の1回、oldRotationに回転前の角度を格納する
-
-                //if (itemRotation.z == -60 && rotationMode == RotationMode.Right)
-                //{
-                //    itemRotation.z += 360;
-                //}
-                //if (itemRotation.z == 360 && rotationMode == RotationMode.Left)
-                //{
-                //    itemRotation.z -= 360;
-                //}
             }
 
             Vector3 newRotation = oldRotation;

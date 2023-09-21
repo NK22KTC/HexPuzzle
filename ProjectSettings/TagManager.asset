@@ -8,6 +8,7 @@ TagManager:
   - Workbench_Piece
   - ItemObjects
   - ItemObject_Piece
+  - ItemSample
   layers:
   - Default
   - TransparentFX

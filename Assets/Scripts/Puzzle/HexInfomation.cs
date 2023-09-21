@@ -10,10 +10,18 @@ public class HexInfomation : MonoBehaviour
     public int s = 0;
     //[Space]
     //public int hexRotation = 0;
-    [HideInInspector]
+    //[HideInInspector]
     public bool canFitting = false, isFitting = false;
     [HideInInspector]
     public GameObject fittingTarget = null;
+
+    private void Update()
+    {
+        if (isFitting)
+        {
+            canFitting = false;
+        }
+    }
 }
 
 //r = 0, 180 の角度の軸, 90度方向に正、270度方向に負
