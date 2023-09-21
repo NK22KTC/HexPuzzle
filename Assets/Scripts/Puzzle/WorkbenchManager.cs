@@ -120,7 +120,7 @@ public class WorkbenchManager : MonoBehaviour
             Destroy(installingItem.gameObject);
         }
 
-        GameManager.instance.score += itemPieceNum;
+        GameManager.instance.score += itemPieceNum * 5;
         Debug.Log(GameManager.instance.score);
         completedMixing = false;
 

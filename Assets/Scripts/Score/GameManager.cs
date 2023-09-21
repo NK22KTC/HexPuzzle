@@ -10,10 +10,10 @@ public class GameManager : SingletonDontDestroy<GameManager>
 
     internal int score = 0;
 
-    int initialMoney = 150;
+    public int initialMoney = 150;
     internal int haveMoney;
 
-    bool isStartPlaying = false;
+    public bool isStartPlaying = false;
 
     public void InitializeVariables()
     {
@@ -29,13 +29,27 @@ public class GameManager : SingletonDontDestroy<GameManager>
 
     public float CountDown(float time)
     {
-        if(gamePlayingTimer != 0 && isStartPlaying)
+        if(gamePlayingTimer <= 0 && isStartPlaying)
         {
+            isStartPlaying = false;
             return 0;
         }
         else
         {
             return time -= Time.deltaTime;
+        }
+    }
+
+    public void ScoreAndMoneyUpdate(int calcNum, bool changeMoneyValue)
+    {
+        if (changeMoneyValue)
+        {
+            haveMoney += calcNum;
+            score += Mathf.Abs(calcNum);
+        }
+        else
+        {
+            score += calcNum;
         }
     }
 }
