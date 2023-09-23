@@ -2,11 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class PlayGameDisplayManager : MonoBehaviour
 {
     [SerializeField]
     Text timerText, scoreText, moneyText;
+
+    [SerializeField]
+    public GameObject[] shelves;
 
     // Start is called before the first frame update
     void Start()
@@ -26,5 +30,19 @@ public class PlayGameDisplayManager : MonoBehaviour
         timerText.text = ((int)GameManager.instance.gamePlayingTimer + 1).ToString();
         scoreText.text = "ÉXÉRÉA : " + GameManager.instance.score.ToString();
         moneyText.text = "èäéùã‡ : " + GameManager.instance.haveMoney.ToString();
+    }
+
+    public void OnChangeShelf(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            if (Keyboard.current.fKey.wasPressedThisFrame)
+            {
+                for (int i = 0; i < shelves.Length; i++)
+                {
+                    shelves[i].SetActive(!shelves[i].activeSelf);
+                }
+            }
+        }
     }
 }

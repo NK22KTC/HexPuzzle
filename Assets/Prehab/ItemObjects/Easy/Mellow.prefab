@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 862712458758390487}
   - component: {fileID: 6634523237669697583}
   m_Layer: 0
-  m_Name: Mellow_Easy
+  m_Name: Mellow
   m_TagString: ItemObjects
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

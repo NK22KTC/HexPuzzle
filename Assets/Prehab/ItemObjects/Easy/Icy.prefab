@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5223838153115692288}
   - component: {fileID: 5722277037640885606}
   m_Layer: 0
-  m_Name: Icy_Easy
+  m_Name: Icy
   m_TagString: ItemObjects
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -49,7 +49,11 @@ public class WorkbenchManager : MonoBehaviour
 
     }
 
-    public void OnFinishMixing() => completedMixing = true;  //調合のボタンを押したときの処理
+    public void OnFinishMixing()  //調合のボタンを押したときの処理
+    {
+        completedMixing = true;
+        //所持金の追加
+    }
 
     void SetWorkbench()
     {

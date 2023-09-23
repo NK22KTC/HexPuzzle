@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1896865612985125105}
   - component: {fileID: 7821783076695607036}
   m_Layer: 0
-  m_Name: Warmly
+  m_Name: Warmly_Difficult
   m_TagString: ItemSample
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

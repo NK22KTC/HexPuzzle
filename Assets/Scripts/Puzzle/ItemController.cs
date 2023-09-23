@@ -95,9 +95,14 @@ public class ItemController : MonoBehaviour
                     GameObject newObject = Instantiate(info.instantiateObject);
                     movementItemParent = newObject;
 
-                    GameManager.instance.ScoreAndMoneyUpdate(-10, true);
-                    Debug.Log(GameManager.instance.haveMoney);
-                    Debug.Log(GameManager.instance.score);
+                    if (FindObjectOfType<PlayGameDisplayManager>().shelves[0].activeSelf)
+                    {
+                        GameManager.instance.ScoreAndMoneyUpdate(-10, false);
+                    }
+                    else
+                    {
+                        GameManager.instance.ScoreAndMoneyUpdate(-25, false);
+                    }
                 }
 
                 movementItemChilds = movementItemParent.transform.GetComponentsInChildren<Transform>();  //index0 に親オブジェクトが入る
