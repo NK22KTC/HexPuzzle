@@ -4660,7 +4660,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6530426249671854317, guid: fe985d22030600f438ac4074a5826a02, type: 3}
       propertyPath: onePlayTime
-      value: 5
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 6530426249671854317, guid: fe985d22030600f438ac4074a5826a02, type: 3}
       propertyPath: isStartPlaying

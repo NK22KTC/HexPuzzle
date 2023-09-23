@@ -32,7 +32,7 @@ public class ResultManager : GameSystems
             FadeOut(fadeImageObject, fadeImage);
             if (fadeImage.color.a >= 1)
             {
-                StartCoroutine(LoadingScene());
+                LoadingScene();
             }
         }
     }

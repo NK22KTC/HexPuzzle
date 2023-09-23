@@ -27,13 +27,9 @@ public class GameSystems : MonoBehaviour
         color.a += Time.fixedDeltaTime * fadeTime;
         fadeImage.color = color;
     }
-    
-    public IEnumerator LoadingScene()
+
+    public void LoadingScene()
     {
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(loadSceneNum);
-        while (!asyncLoad.isDone)
-        {
-            yield return null;
-        }
+        SceneManager.LoadScene(loadSceneNum);
     }
 }

@@ -9,6 +9,7 @@ public class WorkbenchManager : MonoBehaviour
     GameObject workbench, item;
     Transform[] itemChilds;
     Transform[] workbenchChilds;
+    [SerializeField]
     List<ItemInfomation> installingItems = new List<ItemInfomation>();
     Button finishButton;
 
@@ -52,6 +53,7 @@ public class WorkbenchManager : MonoBehaviour
     public void OnFinishMixing()  //’²‡‚Ìƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚Ìˆ—
     {
         completedMixing = true;
+        FindObjectOfType<OrderManager>().ComparisonOrderAndItem(installingItems);
         //Š‹à‚Ì’Ç‰Á
     }
 
@@ -113,7 +115,7 @@ public class WorkbenchManager : MonoBehaviour
         foreach (ItemInfomation installingItem in installingItems)
         {
             puttingItemColors.Add(installingItem.taste);
-            Debug.Log(installingItem.taste);
+            //Debug.Log(installingItem.taste);
 
             var itemPieces = installingItem.transform.GetComponentsInChildren<Transform>();
 
@@ -124,8 +126,8 @@ public class WorkbenchManager : MonoBehaviour
             Destroy(installingItem.gameObject);
         }
 
-        GameManager.instance.score += itemPieceNum * 5;
-        Debug.Log(GameManager.instance.score);
+        //GameManager.instance.score += itemPieceNum * 5;
+        //Debug.Log(GameManager.instance.score);
         completedMixing = false;
 
         for (int i = 1; i < workbenchChilds.Length; i++)
