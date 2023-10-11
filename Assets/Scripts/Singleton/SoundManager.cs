@@ -59,10 +59,12 @@ public class SoundManager : SingletonDontDestroy<SoundManager>
     }
 
     public void OnButtonPush(AudioClip clip)  //Œø‰Ê‰¹‚ð–Â‚ç‚·ŠÖ”
-        {
-            sources[1].clip = clip;
-            sources[1].Play();
-        }
+    {
+        sources[1].clip = clip;
+        sources[1].Play();
+    }
+
+    public void PlaySE(int seNum) => OnButtonPush(SE_Clips[seNum]);
 
     public void OnValueChange(int i)
     {

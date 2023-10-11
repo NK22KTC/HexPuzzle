@@ -84,6 +84,8 @@ public class ItemController : MonoBehaviour
 
             if (hitItem.collider != null)
             {
+                SoundManager.instance.PlaySE(0);  //‘fŞ‚ğ‚Â‚©‚Ş‚Æ‚«‚ÌŒø‰Ê‰¹‚ğ–Â‚ç‚·ŠÖ”
+
                 if (hitItem.collider.CompareTag("ItemObject_Piece"))
                 {
                     movementItem = hitItem.collider.gameObject;
@@ -212,6 +214,8 @@ public class ItemController : MonoBehaviour
             movementItemParent.transform.position = fitPos;
 
             movementItemParent.GetComponent<ItemInfomation>().isFitting = true;
+
+            SoundManager.instance.PlaySE(2);
 
             HexInfomation info_origin = _hitWorkbench.collider.GetComponent<HexInfomation>();
             for (int i = 1; i < movementItemChilds.Length; i++)
@@ -352,6 +356,8 @@ public class ItemController : MonoBehaviour
 
             movementItem = null;
             if(!isRotation && !canDoFitting) movementItemParent = null;    //‘fŞ‚Ì‰ñ“]‚ªI‚í‚é‚Ü‚Åmovement_Item_Parent‚ğnull‚É‚µ‚È‚¢
+
+            SoundManager.instance.PlaySE(1);
         }
     }
 

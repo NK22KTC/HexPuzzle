@@ -25,7 +25,6 @@ public class WorkbenchManager : MonoBehaviour
         itemController = camera.GetComponent<ItemController>();
 
         finishButton = FindObjectOfType<Button>();  //É{É^ÉìÇ™ëùÇ¶ÇΩÇÁïœÇ¶ÇÈ
-        finishButton.onClick.AddListener(() => OnFinishMixing());
 
         SetWorkbench();
     }
@@ -54,7 +53,6 @@ public class WorkbenchManager : MonoBehaviour
     {
         completedMixing = true;
         FindObjectOfType<OrderManager>().ComparisonOrderAndItem(installingItems);
-        //èäéùã‡ÇÃí«â¡
     }
 
     void SetWorkbench()
@@ -126,8 +124,6 @@ public class WorkbenchManager : MonoBehaviour
             Destroy(installingItem.gameObject);
         }
 
-        //GameManager.instance.score += itemPieceNum * 5;
-        //Debug.Log(GameManager.instance.score);
         completedMixing = false;
 
         for (int i = 1; i < workbenchChilds.Length; i++)

@@ -17,10 +17,11 @@ public class TitleManager : GameSystems
     Image fadeImage;
 
     public enum DisplayGroup { TitleGroup, OptionGroup, HowToOperateGroup };
-
     [HideInInspector] 
     public DisplayGroup displayingGroup = DisplayGroup.TitleGroup;
     private DisplayGroup nowDisplayingGroup = DisplayGroup.TitleGroup;
+
+
 
     [HideInInspector]
     public bool startGame = false;

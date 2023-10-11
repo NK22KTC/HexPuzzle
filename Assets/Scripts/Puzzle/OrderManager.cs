@@ -14,6 +14,10 @@ public class OrderManager : MonoBehaviour
     List<ItemInfomation.ItemTaste> state;
     List<int> pieceNum;
 
+    int beforeMoney = 150;
+
+    bool isFirst = true;
+
     void Start()
     {
         MakeOrder();
@@ -52,6 +56,7 @@ public class OrderManager : MonoBehaviour
                 }
             }
         }
+
         UpdateOrderText();
     }
 
@@ -111,35 +116,62 @@ public class OrderManager : MonoBehaviour
                     break;
             }
         }
+        //Debug.Log(warmlyNum + ", " + icyNum + ", " + freshNum + ", " + mellowNum + ", " + richnessNum);
 
-        for(int j = 0;  j < state.Count; j++)
+        int calcNum = 0, totalPieceNum = 0, orderPieceNum = 0;
+        for (int j = 0;  j < state.Count; j++)
         {
-            int calcNum = 0;
             switch (state[j])
             {
                 case ItemInfomation.ItemTaste.Warmly:
                     calcNum += Calc(warmlyNum, pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Warmly)]);
+                    totalPieceNum += warmlyNum;
+                    orderPieceNum += pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Warmly)];
                     break;
                 case ItemInfomation.ItemTaste.Icy:
                     calcNum = Calc(icyNum, pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Icy)]);
+                    totalPieceNum += icyNum;
+                    orderPieceNum += pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Icy)];
                     break;
                 case ItemInfomation.ItemTaste.Fresh:
                     calcNum += Calc(freshNum, pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Fresh)]);
+                    totalPieceNum += freshNum;
+                    orderPieceNum += pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Fresh)];
                     break;
                 case ItemInfomation.ItemTaste.Mellow:
                     calcNum += Calc(mellowNum, pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Mellow)]);
+                    totalPieceNum += mellowNum;
+                    orderPieceNum += pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Mellow)];
                     break;
                 case ItemInfomation.ItemTaste.Richness:
                     calcNum += Calc(richnessNum, pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Richness)]);
+                    totalPieceNum += richnessNum;
+                    orderPieceNum += pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Richness)];
                     break;
             }
-            GameManager.instance.haveMoney += calcNum;
-            GameManager.instance.score += calcNum;
         }
+        GameManager.instance.haveMoney += calcNum;
+        GameManager.instance.score += calcNum;
+
+        JudgePlaySE(totalPieceNum, orderPieceNum);
     }
 
     int Calc(int num, int orderNum)
     {
         return num * 7 + (num - orderNum) * 3;
+    }
+
+    void JudgePlaySE(int totalPieceNum, int orderPieceNum)
+    {
+        if(totalPieceNum >= orderPieceNum / 2)
+        {
+            SoundManager.instance.PlaySE(3);
+        }
+        else
+        {
+            SoundManager.instance.PlaySE(5);
+        }
+
+        beforeMoney = GameManager.instance.haveMoney;
     }
 }

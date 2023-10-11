@@ -1,0 +1,29 @@
+margaret.png
+size:1815,1210
+filter:Linear,Linear
+pma:true
+scale:0.5
+レイヤー 1
+bounds:2,256,814,729
+レイヤー 2
+bounds:2,1051,166,157
+offsets:0,0,168,157
+レイヤー 4
+bounds:170,987,221,845
+offsets:0,0,325,848
+rotate:90
+レイヤー 5
+bounds:1017,832,376,796
+offsets:91,0,467,796
+rotate:90
+レイヤー 6
+bounds:818,2,903,828
+offsets:453,783,1356,1841
+
+margaret_2.png
+size:1323,1493
+filter:Linear,Linear
+pma:true
+scale:0.5
+レイヤー 3
+bounds:2,2,1319,1489
