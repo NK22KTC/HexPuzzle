@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class OptionManager : SingletonDontDestroy<OptionManager>
+public class OptionManager : MonoBehaviour
 {
-    SoundManager soundManager;
-
     [SerializeField]
     Slider[] soundSliders;
 
@@ -15,8 +13,6 @@ public class OptionManager : SingletonDontDestroy<OptionManager>
 
     void Start()
     {
-        soundManager = GetComponent<SoundManager>();
-
         for (int i = 0; i < soundSliders.Length; i++)
         {
             ChangedInSlider(i);

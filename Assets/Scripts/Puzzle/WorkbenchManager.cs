@@ -31,6 +31,7 @@ public class WorkbenchManager : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.K)) { UnityEditor.EditorApplication.isPaused = true; }
         if(workbench == null)
         {
             SetWorkbench();
@@ -51,6 +52,8 @@ public class WorkbenchManager : MonoBehaviour
 
     public void OnFinishMixing()  //’²‡‚Ìƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚Ìˆ—
     {
+        if (GameManager.instance.gamePlayingTimer <= 0) { return; }
+
         completedMixing = true;
         FindObjectOfType<OrderManager>().ComparisonOrderAndItem(installingItems);
     }
@@ -73,7 +76,7 @@ public class WorkbenchManager : MonoBehaviour
             {
                 itemChilds = itemController.movementItemParent.GetComponentsInChildren<Transform>();
 
-                if (itemController.canDoFitting && info_w.canFitting)
+                if (itemController.canFit && info_w.canFitting)
                 {
                     newColor = (initColor + itemChilds[1].GetComponent<SpriteRenderer>().color) / 2f;
                 }

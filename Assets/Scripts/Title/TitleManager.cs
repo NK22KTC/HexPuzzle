@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -16,7 +12,7 @@ public class TitleManager : GameSystems
     [SerializeField]
     Image fadeImage;
 
-    public enum DisplayGroup { TitleGroup, OptionGroup, HowToOperateGroup };
+    public enum DisplayGroup { TitleGroup, OptionGroup, HowToPlayGroup };
     [HideInInspector] 
     public DisplayGroup displayingGroup = DisplayGroup.TitleGroup;
     private DisplayGroup nowDisplayingGroup = DisplayGroup.TitleGroup;

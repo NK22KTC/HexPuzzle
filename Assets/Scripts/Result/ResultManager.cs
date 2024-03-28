@@ -5,11 +5,9 @@ using UnityEngine.UI;
 
 public class ResultManager : GameSystems
 {
-    [SerializeField]
-    GameObject fadeImageObject;
+    [SerializeField] private GameObject fadeImageObject;
 
-    [SerializeField]
-    Text scoreText, moneyText;
+    [SerializeField] private Text scoreText, moneyText;
 
     Image fadeImage;
 
@@ -28,7 +26,7 @@ public class ResultManager : GameSystems
     {
         if(changeScene)
         {
-            GameManager.instance.InitializeVariables();
+            GameManager.instance.Init();
             FadeOut(fadeImageObject, fadeImage);
             if (fadeImage.color.a >= 1)
             {

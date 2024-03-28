@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,10 +9,11 @@ public class ItemController : MonoBehaviour
 
     private InputAction.CallbackContext mouseContext;
 
-    GameObject workbench;
+    GameObject workbench;  //錬金窯
     private Transform[] workbenchChilds;
 
-    private GameObject movementItem, touchedItem;
+    private GameObject movementItem;
+    private GameObject touchedItem;
     internal GameObject movementItemParent;
     private Transform[] movementItemChilds;
     private Vector3 itemRotation;
@@ -22,15 +21,17 @@ public class ItemController : MonoBehaviour
     private float rotationTime = 0;
     [SerializeField]
     float rotationSpeed = 1.5f;
-    private bool isRotation = false, removeItemOnce = false;
+    private bool isRotation = false;  //素材が回転しているか
+    private bool removeItemOnce = false;
 
     //最後に持っていた素材を入れる変数
-    GameObject heldItem;
+    GameObject lastHoldItem;
 
     //ChackInstallingToWorkbench内でのみ使う
+    //素材を錬金窯にはめれるかの判定用
     HexInfomation judgeInfo;
 
-    internal bool canDoFitting = false;
+    internal bool canFit = false;
 
     enum RotationMode { Left, Right };
     RotationMode rotationMode;
@@ -73,57 +74,54 @@ public class ItemController : MonoBehaviour
         worldMousePosition = Camera.main.ScreenToWorldPoint(context.ReadValue<Vector2>());
     }
 
-    public void OnHoldItem(InputAction.CallbackContext context)
+    public void OnHoldItem(InputAction.CallbackContext context)  //素材をつかむ処理
     {
         mouseContext = context;
-        if (isRotation) return;
+        if (isRotation) return;  //素材が回転しているときは処理を抜ける
 
-        if (context.phase == InputActionPhase.Started)  //素材の処理
+        if (context.phase != InputActionPhase.Started) { return; }  //素材をつかむボタンが押された瞬間以外は処理を抜ける
+ 
+        RaycastHit2D hitItem = Physics2D.Raycast(worldMousePosition, Vector2.zero, 0, layerMask: 64);  //カーソルの位置にLayerのSozaiPieceに設定されているものがあるか探す
+
+        if (hitItem.collider == null) { return; }  //カーソルの位置に何もなかったら処理を抜ける
+
+        if (hitItem.collider.CompareTag("ItemObject_Piece"))  //素材をクリックしたら持ち上げる
         {
-            RaycastHit2D hitItem = Physics2D.Raycast(worldMousePosition, Vector2.zero);
+            movementItem = hitItem.collider.gameObject;
+            movementItemParent = movementItem.transform.parent.gameObject;
+        }
+        else if (hitItem.collider.CompareTag("ItemSample"))  //素材のサンプルをクリックしたらそれの実物を生成して持ち上げる、
+        {
+            ItemInfomation info = hitItem.transform.parent.GetComponent<ItemInfomation>();
+            GameObject newObject = Instantiate(info.instantiateObject);
+            movementItemParent = newObject;
 
-            if (hitItem.collider != null)
+            GameManager.instance.ScoreAndMoneyUpdate(info.PieceNum * -5, false);  //素材のピースの数分の代金を支払う
+
+        }
+
+        SoundManager.instance.PlaySE(0);  //素材をつかむときの効果音を鳴らす
+
+        movementItemChilds = movementItemParent.transform.GetComponentsInChildren<Transform>();  //持っている素材のピースを全て呼び出す
+        itemRotation = movementItemParent.transform.localEulerAngles;
+        lastHoldItem = movementItemParent;
+
+        movementItemParent.GetComponent<ItemInfomation>().isFitting = false;
+        CheckItemFitted();
+    }
+
+    private void CheckItemFitted()  //錬金窯にはまっていたかを確認、はまっていたら解除する
+    {
+        for (int i = 1; i < movementItemChilds.Length; i++)
+        {
+            HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();
+            if (info_i.fittingTarget != null)
             {
-                SoundManager.instance.PlaySE(0);  //素材をつかむときの効果音を鳴らす関数
-
-                if (hitItem.collider.CompareTag("ItemObject_Piece"))
-                {
-                    movementItem = hitItem.collider.gameObject;
-                    movementItemParent = movementItem.transform.parent.gameObject;
-                }
-                else if (hitItem.collider.CompareTag("ItemSample"))
-                {
-                    ItemInfomation info = hitItem.transform.parent.GetComponent<ItemInfomation>();
-                    GameObject newObject = Instantiate(info.instantiateObject);
-                    movementItemParent = newObject;
-
-                    if (FindObjectOfType<PlayGameDisplayManager>().shelves[0].activeSelf)
-                    {
-                        GameManager.instance.ScoreAndMoneyUpdate(-10, false);
-                    }
-                    else
-                    {
-                        GameManager.instance.ScoreAndMoneyUpdate(-25, false);
-                    }
-                }
-
-                movementItemChilds = movementItemParent.transform.GetComponentsInChildren<Transform>();  //index0 に親オブジェクトが入る
-                itemRotation = movementItemParent.transform.localEulerAngles;
-                heldItem = movementItemParent;
-
-                movementItemParent.GetComponent<ItemInfomation>().isFitting = false;
-                for (int i = 1; i < movementItemChilds.Length; i++)
-                {
-                    HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();  //作業台にはまっていたかを確認
-                    if (info_i.fittingTarget != null)
-                    {
-                        HexInfomation info_w = info_i.fittingTarget.GetComponent<HexInfomation>();
-                        info_i.isFitting = false;
-                        info_i.fittingTarget = null;
-                        info_w.isFitting = false;
-                        info_w.fittingTarget = null;
-                    }
-                }
+                HexInfomation info_w = info_i.fittingTarget.GetComponent<HexInfomation>();
+                info_i.isFitting = false;
+                info_i.fittingTarget = null;
+                info_w.isFitting = false;
+                info_w.fittingTarget = null;
             }
         }
     }
@@ -140,48 +138,50 @@ public class ItemController : MonoBehaviour
 
         if (mouseContext.phase != InputActionPhase.Canceled)  //作業台の処理
         {
+            //持っている素材のピースが錬金窯にはめれる数
+            //これが持っている素材のピース数と同じ時にはめる
             int canFittingNum = 0;
 
             int mask = 1 << 7;  //Layer7にWorkbenchを設定
-            RaycastHit2D _hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
-            if (_hitWorkbench.collider != null)
+            RaycastHit2D hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
+            if (hitWorkbench.collider != null)
             {
-                HexInfomation info_origin = _hitWorkbench.collider.GetComponent<HexInfomation>();
+                HexInfomation infoOrigin = hitWorkbench.collider.GetComponent<HexInfomation>();
 
                 for (int i = 1; i < workbenchChilds.Length; i++)
                 {
-                    HexInfomation info_w = workbenchChilds[i].GetComponent<HexInfomation>();
+                    HexInfomation infoWB = workbenchChilds[i].GetComponent<HexInfomation>();  //
 
                     for (int j = 1; j < movementItemChilds.Length; j++)
                     {
-                        HexInfomation info_i = movementItemChilds[j].GetComponent<HexInfomation>();  //素材の位置情報を取得する
-                        judgeInfo.q = info_origin.q + info_i.q;
-                        judgeInfo.r = info_origin.r + info_i.r;
-                        judgeInfo.s = info_origin.s + info_i.s;
+                        HexInfomation infoItem = movementItemChilds[j].GetComponent<HexInfomation>();  //素材の六角座標の情報を取得する
+                        judgeInfo.q = infoOrigin.q + infoItem.q;
+                        judgeInfo.r = infoOrigin.r + infoItem.r;
+                        judgeInfo.s = infoOrigin.s + infoItem.s;
 
-                        if(judgeInfo.q == info_w.q && judgeInfo.r == info_w.r && judgeInfo.s == info_w.s && !info_w.isFitting)
+                        if(judgeInfo.q == infoWB.q && judgeInfo.r == infoWB.r && judgeInfo.s == infoWB.s && !infoWB.isFitting)
                         {
-                            info_i.canFitting = true;
-                            info_w.canFitting = true;
+                            infoItem.canFitting = true;
+                            infoWB.canFitting = true;
                             canFittingNum++;
                             break;
                         }
                         else
                         {
-                            info_i.canFitting = false;
-                            info_w.canFitting = false;
+                            infoItem.canFitting = false;
+                            infoWB.canFitting = false;
                         }
                     }
                 }
 
-                if(canFittingNum == movementItemChilds.Length-1)
+                if(canFittingNum == movementItemChilds.Length-1)  //素材のピース数と同じときは置く
                 {
                     //Debug.Log("置けます");
-                    canDoFitting = true;
+                    canFit = true;
                 }
                 else
                 {
-                    canDoFitting = false;
+                    canFit = false;
                 }
             }
             else
@@ -191,25 +191,25 @@ public class ItemController : MonoBehaviour
                     HexInfomation info_w = workbenchChilds[i].GetComponent<HexInfomation>();
                     info_w.canFitting = false;
                 }
-                canDoFitting = false;
+                canFit = false;
             }
         }
     }
 
     void PutOnWorkbench()  //作業台に素材を置く
     {
-        if (heldItem == null) return;
+        if (lastHoldItem == null) return;
         if (movementItemParent == null) return;
         int mask = 1 << 7;  //Layer7にWorkbenchを設定
-        RaycastHit2D _hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
-        if (!_hitWorkbench)
+        RaycastHit2D hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
+        if (!hitWorkbench)
         {
-            canDoFitting = false;
+            canFit = false;
         }
 
-        if (mouseContext.phase == InputActionPhase.Waiting && canDoFitting)  //素材を離した直後の処理を書く
+        if (mouseContext.phase == InputActionPhase.Waiting && canFit)  //素材を離した直後の処理を書く
         {
-            Vector3 fitPos = _hitWorkbench.transform.position;
+            Vector3 fitPos = hitWorkbench.transform.position;
             fitPos.z = movementItemParent.transform.position.z;
             movementItemParent.transform.position = fitPos;
 
@@ -217,37 +217,39 @@ public class ItemController : MonoBehaviour
 
             SoundManager.instance.PlaySE(2);
 
-            HexInfomation info_origin = _hitWorkbench.collider.GetComponent<HexInfomation>();
+            HexInfomation infoOrigin = hitWorkbench.collider.GetComponent<HexInfomation>();
             for (int i = 1; i < movementItemChilds.Length; i++)
             {
-                HexInfomation info_i = movementItemChilds[i].GetComponent<HexInfomation>();  //まず素材の位置情報を取得する
-                judgeInfo.q = info_origin.q + info_i.q;
-                judgeInfo.r = info_origin.r + info_i.r;
-                judgeInfo.s = info_origin.s + info_i.s;
+                HexInfomation infoItem = movementItemChilds[i].GetComponent<HexInfomation>();  //素材の位置情報を取得する
+
+                //
+                judgeInfo.q = infoOrigin.q + infoItem.q;
+                judgeInfo.r = infoOrigin.r + infoItem.r;
+                judgeInfo.s = infoOrigin.s + infoItem.s;
 
                 for (int j = 1; j < workbenchChilds.Length; j++)  //作業台の位置情報と比べる
                 {
-                    HexInfomation info_w = workbenchChilds[j].GetComponent<HexInfomation>();
+                    HexInfomation infoWB = workbenchChilds[j].GetComponent<HexInfomation>();
 
-                    if (judgeInfo.q == info_w.q && judgeInfo.r == info_w.r && judgeInfo.s == info_w.s)
+                    if (judgeInfo.q == infoWB.q && judgeInfo.r == infoWB.r && judgeInfo.s == infoWB.s)  //
                     {
-                        info_i.isFitting = true;
-                        info_w.isFitting = true;
-                        info_i.fittingTarget = info_w.gameObject;
-                        info_w.fittingTarget = info_i.gameObject;
-                        info_i.canFitting = false;
+                        infoItem.isFitting = true;
+                        infoWB.isFitting = true;
+                        infoItem.fittingTarget = infoWB.gameObject;
+                        infoWB.fittingTarget = infoItem.gameObject;
+                        infoItem.canFitting = false;
                         break;
                     }
 
                 }
-                info_i.canFitting = false;
+                infoItem.canFitting = false;
             }
 
             movementItemParent = null;
             movementItemChilds = new Transform[0];
 
         }
-        canDoFitting = false;
+        canFit = false;
         removeItemOnce = false;
     }
 
@@ -273,16 +275,16 @@ public class ItemController : MonoBehaviour
 
         for (int i = 0; i < Items.Length; i++)
         {
-            GameObject _gameObject = Items[i].gameObject;
-            if (_gameObject.CompareTag("ItemObject_Piece"))
+            GameObject piece = Items[i].gameObject;
+            if (piece.CompareTag("ItemObject_Piece"))
             {
                 if (Items[i].isFitting)
                 {
-                    _gameObject.GetComponent<SpriteRenderer>().sortingOrder = 1;
+                    piece.GetComponent<SpriteRenderer>().sortingOrder = 1;
                 }
-                else if (_gameObject.transform.parent.gameObject != heldItem)
+                else if (piece.transform.parent.gameObject != lastHoldItem)
                 {
-                    _gameObject.GetComponent<SpriteRenderer>().sortingOrder = 2;
+                    piece.GetComponent<SpriteRenderer>().sortingOrder = 2;
                 }
             }
         }
@@ -336,9 +338,6 @@ public class ItemController : MonoBehaviour
 
     void HoldingItemControl()
     {
-        //Debug.Log("movementItemParent is " + movementItemParent);
-        //Debug.Log("removeItemOnce is " + removeItemOnce);
-
         if (movementItemParent == null) return;
         if (removeItemOnce) return;
 
@@ -355,7 +354,7 @@ public class ItemController : MonoBehaviour
             movementItemParent.transform.position = worldMousePosition;
 
             movementItem = null;
-            if(!isRotation && !canDoFitting) movementItemParent = null;    //素材の回転が終わるまでmovement_Item_Parentをnullにしない
+            if(!isRotation && !canFit) movementItemParent = null;    //素材の回転が終わるまでmovement_Item_Parentをnullにしない
 
             SoundManager.instance.PlaySE(1);
         }
@@ -393,7 +392,6 @@ public class ItemController : MonoBehaviour
             movementItemParent.transform.localEulerAngles = newRotation;
             rotationTime += Time.deltaTime;
             isRotation = true;
-            //Invoke("SmoothlyRotate", Time.deltaTime);
         }
         else if(rotationTime != 0)
         {

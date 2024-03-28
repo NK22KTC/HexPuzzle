@@ -14,21 +14,29 @@ public class OrderManager : MonoBehaviour
     List<ItemInfomation.ItemTaste> state;
     List<int> pieceNum;
 
-    int beforeMoney = 150;
-
-    bool isFirst = true;
+    private bool isFinishing = false;
 
     void Start()
     {
         MakeOrder();
     }
 
+    private void FixedUpdate()
+    {
+        if(GameManager.instance.gamePlayingTimer <= 0)
+        {
+            SetFinish();
+        }
+    }
+
     public void MakeOrder()
     {
+        if (GameManager.instance.gamePlayingTimer <= 0) { return; }
+
         state = new List<ItemInfomation.ItemTaste>();
         pieceNum = new List<int>();
 
-        for (int i = 0; i < UnityEngine.Random.Range(2, 4); i++)
+        for (int i = 0; i < UnityEngine.Random.Range(2, 4); i++)  //注文の色を2種から3種までにする
         {
             while (true)
             {
@@ -36,13 +44,13 @@ public class OrderManager : MonoBehaviour
                 int addPieceNum = usePieceNum[UnityEngine.Random.Range(0, usePieceNum.Length)];
                 bool canAdd = true;
 
-                for (int j = 0; j < state.Count; j++)
+                for (int j = 0; j < state.Count; j++)  //同じ素材を二度以上指定しない
                 {
                     if (state[j] == addTaste)
                     {
                         canAdd = false;
                     }
-                    if(pieceNum[j] == addPieceNum)
+                    if(pieceNum[j] == addPieceNum)  //ピースの数を他の注文の量と同じにしない
                     {
                         canAdd = false;
                     }
@@ -60,12 +68,14 @@ public class OrderManager : MonoBehaviour
         UpdateOrderText();
     }
 
-    void UpdateOrderText()
+    void UpdateOrderText()  //注文UI更新
     {
+        if (GameManager.instance.gamePlayingTimer <= 0) { return; }
+
         orderText.text = "";
         for (int i = 0; i < state.Count; ++i)
         {
-            switch(state[i])
+            switch (state[i])
             {
                 case ItemInfomation.ItemTaste.Warmly:
                     orderText.text += "赤色 x " + pieceNum[i].ToString();
@@ -84,18 +94,30 @@ public class OrderManager : MonoBehaviour
                     break;
             }
 
-            if(i != state.Count - 1)
+            if (i != state.Count - 1)
             {
                 orderText.text += ",  ";
             }
         }
     }
 
-    public void ComparisonOrderAndItem(List<ItemInfomation> infos)
+    public void SetFinish()
     {
-        int warmlyNum = 0, icyNum = 0, freshNum = 0, mellowNum = 0, richnessNum = 0;
+        if(isFinishing) { return; }
+        orderText.text = "--閉店--";
+        isFinishing = true;
+    }
 
-        for (int i  = 0; i < infos.Count; i++)
+    public void ComparisonOrderAndItem(List<ItemInfomation> infos)  //注文に対してまっている
+    {
+        //それぞれのピースの数を計算
+        int warmlyNum = 0;
+        int icyNum = 0;
+        int freshNum = 0;
+        int mellowNum = 0;
+        int richnessNum = 0;
+
+        for (int i  = 0; i < infos.Count; i++)  //はまっているピースの確認
         {
             switch(infos[i].taste)
             {
@@ -116,10 +138,12 @@ public class OrderManager : MonoBehaviour
                     break;
             }
         }
-        //Debug.Log(warmlyNum + ", " + icyNum + ", " + freshNum + ", " + mellowNum + ", " + richnessNum);
 
-        int calcNum = 0, totalPieceNum = 0, orderPieceNum = 0;
-        for (int j = 0;  j < state.Count; j++)
+        int calcNum = 0;
+        int totalPieceNum = 0; 
+        int orderPieceNum = 0;
+
+        for (int j = 0;  j < state.Count; j++)  //注文と比較
         {
             switch (state[j])
             {
@@ -156,9 +180,9 @@ public class OrderManager : MonoBehaviour
         JudgePlaySE(totalPieceNum, orderPieceNum);
     }
 
-    int Calc(int num, int orderNum)
+    int Calc(int pieceNum, int orderNum)  //得点、過不足なしで最高得点
     {
-        return num * 7 + (num - orderNum) * 3;
+        return pieceNum * 7 + (pieceNum - orderNum) * 3;
     }
 
     void JudgePlaySE(int totalPieceNum, int orderPieceNum)
@@ -171,7 +195,5 @@ public class OrderManager : MonoBehaviour
         {
             SoundManager.instance.PlaySE(5);
         }
-
-        beforeMoney = GameManager.instance.haveMoney;
     }
 }

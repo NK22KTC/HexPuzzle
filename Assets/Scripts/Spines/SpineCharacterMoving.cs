@@ -12,7 +12,7 @@ public class SpineCharacterMoving : MonoBehaviour
     public bool finishMixing = false;
 
     [SerializeField]
-    private string animName = "idol";  //再生するアニメーションの名前
+    private string animName = "idol";  //再生するアニメーションの名前 (命名ミス,もとはidle)
     private SkeletonAnimation skeletonAnimation = default;  //ゲームオブジェクトに設定されているSkeletonAnimation
     private Spine.AnimationState spineAnimationState = default;  //Spineアニメーションを適用するために必要なAnimationState
 

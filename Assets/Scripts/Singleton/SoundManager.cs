@@ -6,14 +6,10 @@ using UnityEngine.UI;
 
 public class SoundManager : SingletonDontDestroy<SoundManager>
 {
-    OptionManager optionManager;
-    GameManager gameManager;
-
-    [SerializeField]
-    Slider[] soundSliders;
-
     [SerializeField]
     AudioSource[] sources;  //sources[0]‚ªBGM,sources[1]‚ªSE
+    [SerializeField] private AudioSource bgm;
+    [SerializeField] private AudioSource se;
 
     [SerializeField]
     AudioClip[] BGM_Clips;
@@ -23,14 +19,9 @@ public class SoundManager : SingletonDontDestroy<SoundManager>
 
     int nowLoadSceneIndex = 0;
 
+
     void Start()
     {
-        optionManager = GetComponent<OptionManager>();
-        for(int i = 0; i < soundSliders.Length; i++)
-        {
-            OnValueChange(i);
-        }
-
         nowLoadSceneIndex = SceneManager.GetActiveScene().buildIndex;
     }
 
@@ -60,14 +51,12 @@ public class SoundManager : SingletonDontDestroy<SoundManager>
 
     public void OnButtonPush(AudioClip clip)  //Œø‰Ê‰¹‚ð–Â‚ç‚·ŠÖ”
     {
-        sources[1].clip = clip;
-        sources[1].Play();
+        se.clip = clip;
+        se.Play();
     }
 
     public void PlaySE(int seNum) => OnButtonPush(SE_Clips[seNum]);
 
-    public void OnValueChange(int i)
-    {
-        sources[i].volume = soundSliders[i].value;
-    }
+    public void ChangeBGMVol(float f) => bgm.volume = f;
+    public void ChangeSEVol(float f) => se.volume = f;
 }

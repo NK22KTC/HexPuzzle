@@ -42,6 +42,8 @@ public class ButtonManager : GameSystems
 
     public void OnChamgeScene(int _loadSceneNum)
     {
+        SoundManager.instance.PlaySE(6);
+
         if(titleManager != null)
         {
             titleManager.startGame = true;

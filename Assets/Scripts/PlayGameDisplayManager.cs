@@ -15,7 +15,7 @@ public class PlayGameDisplayManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GameManager.instance.InitializeVariables();
+        GameManager.instance.Init();
         GameManager.instance.isStartPlaying = true;
     }
 

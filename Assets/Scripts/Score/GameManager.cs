@@ -6,8 +6,9 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : SingletonDontDestroy<GameManager>
 {
-    [SerializeField]
-    GameObject[] characters;
+    private const float characterSpawnX = 16.5f;
+
+    [SerializeField] private GameObject[] characters;
     public GameObject nowCharacter;
 
     public float onePlayTime = 90f;
@@ -23,8 +24,15 @@ public class GameManager : SingletonDontDestroy<GameManager>
 
     public bool isStartPlaying = false, isDisplayfinishing = false, isPlayingOnce = false, fading = false;
 
-    public void InitializeVariables()
+    private void Start()
     {
+        Init();
+    }
+
+    public void Init()
+    {
+        nowCharacter = characters[0];
+
         instance.score = 0;
         gamePlayingTimer = onePlayTime;
         haveMoney = initialMoney;
@@ -35,20 +43,12 @@ public class GameManager : SingletonDontDestroy<GameManager>
         fading = false;
     }
 
-    private void Start()
-    {
-        nowCharacter = characters[0];
-
-        InitializeVariables();
-    }
-
     void Update()
     {
         if(SceneManager.GetActiveScene().name == "GameScene")
         {
             if (fading)
             {
-                //GameSystems.FadeOut();
                 SceneManager.LoadScene("ResultScene");
             }
             else if (isDisplayfinishing)
@@ -72,7 +72,7 @@ public class GameManager : SingletonDontDestroy<GameManager>
         {
             if(gamePlayingTimer < 0 && !isPlayingOnce)
             {
-                SoundManager.instance.PlaySE();
+                SoundManager.instance.PlaySE(0);
             }
             time -= Time.deltaTime;
         }
@@ -101,6 +101,8 @@ public class GameManager : SingletonDontDestroy<GameManager>
 
     public void InstantiateCharacter()
     {
+        if(gamePlayingTimer < 0) { return; }
+
         int newCharaIndex = 0;
         for(int i = 0; i < characters.Length; i++)
         {
@@ -120,6 +122,6 @@ public class GameManager : SingletonDontDestroy<GameManager>
         }
 
         nowCharacter = characters[newCharaIndex];
-        Instantiate(nowCharacter, new Vector3(16.5f, 0, 0), Quaternion.identity);
+        Instantiate(nowCharacter, new Vector3(characterSpawnX, 0, 0), Quaternion.identity);
     }
 }
