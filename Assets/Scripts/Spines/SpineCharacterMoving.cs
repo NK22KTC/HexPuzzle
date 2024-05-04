@@ -16,6 +16,9 @@ public class SpineCharacterMoving : MonoBehaviour
     private SkeletonAnimation skeletonAnimation = default;  //ゲームオブジェクトに設定されているSkeletonAnimation
     private Spine.AnimationState spineAnimationState = default;  //Spineアニメーションを適用するために必要なAnimationState
 
+    private float orderPlace = 0;
+    private float offScreenLect = -16.5f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -52,7 +55,7 @@ public class SpineCharacterMoving : MonoBehaviour
     {
         if(characterState == CharacterState.EnterStore)
         {
-            if(transform.position.x < 0)
+            if(transform.position.x < orderPlace)
             {
                 characterState = CharacterState.Wait;
                 PlayAnimation("idol");
@@ -75,7 +78,7 @@ public class SpineCharacterMoving : MonoBehaviour
             pos.x -= Time.deltaTime * moveSpeed;
             transform.position = pos;
 
-            if(pos.x < -16.5f)
+            if(pos.x < offScreenLect)
             {
                 Destroy(gameObject);
             }

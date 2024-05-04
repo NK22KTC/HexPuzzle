@@ -65,7 +65,7 @@ public class ItemController : MonoBehaviour
 
         PutOnWorkbench();
 
-        ChackInstallingToWorkbench();
+        CheckInstallingToWorkbench();
     }
 
     // マウス座標が更新された時に通知するコールバック関数
@@ -74,16 +74,17 @@ public class ItemController : MonoBehaviour
         worldMousePosition = Camera.main.ScreenToWorldPoint(context.ReadValue<Vector2>());
     }
 
-    public void OnHoldItem(InputAction.CallbackContext context)  //素材をつかむ処理
+    public void OnHoldItem(InputAction.CallbackContext context)  //素材をつかむ処理 (InputSystemのコールバックで処理)
     {
         mouseContext = context;
-        if (isRotation) return;  //素材が回転しているときは処理を抜ける
-
-        if (context.phase != InputActionPhase.Started) { return; }  //素材をつかむボタンが押された瞬間以外は処理を抜ける
+        if (isRotation) return;
+        if (context.phase != InputActionPhase.Started) { return; }
  
-        RaycastHit2D hitItem = Physics2D.Raycast(worldMousePosition, Vector2.zero, 0, layerMask: 64);  //カーソルの位置にLayerのSozaiPieceに設定されているものがあるか探す
+        RaycastHit2D hitItem = Physics2D.Raycast(worldMousePosition, Vector2.zero, 0, layerMask: 64);
 
-        if (hitItem.collider == null) { return; }  //カーソルの位置に何もなかったら処理を抜ける
+        if (hitItem.collider == null) { return; }
+
+
 
         if (hitItem.collider.CompareTag("ItemObject_Piece"))  //素材をクリックしたら持ち上げる
         {
@@ -96,8 +97,7 @@ public class ItemController : MonoBehaviour
             GameObject newObject = Instantiate(info.instantiateObject);
             movementItemParent = newObject;
 
-            GameManager.instance.ScoreAndMoneyUpdate(info.PieceNum * -5, false);  //素材のピースの数分の代金を支払う
-
+            GameManager.instance.ScoreAndMoneyUpdate(info.PieceNum * -5, false);
         }
 
         SoundManager.instance.PlaySE(0);  //素材をつかむときの効果音を鳴らす
@@ -132,68 +132,66 @@ public class ItemController : MonoBehaviour
         workbenchChilds = workbench.GetComponentsInChildren<Transform>();
     }
 
-    void ChackInstallingToWorkbench()  //作業台に素材を置けるかを確認する
+    void CheckInstallingToWorkbench()  //作業台に素材を置けるかを確認する
     {
         if (movementItemParent == null) return;
+        if (mouseContext.phase == InputActionPhase.Canceled) { return; }
 
-        if (mouseContext.phase != InputActionPhase.Canceled)  //作業台の処理
+        //持っている素材のピースが錬金窯にはめれる数
+        //これが持っている素材のピース数と同じ時にはめる
+        int canFittingCount = 0;
+
+        int mask = 1 << 7;  //Workbenchレイヤー
+        RaycastHit2D hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
+        if (hitWorkbench.collider == null)
         {
-            //持っている素材のピースが錬金窯にはめれる数
-            //これが持っている素材のピース数と同じ時にはめる
-            int canFittingNum = 0;
-
-            int mask = 1 << 7;  //Layer7にWorkbenchを設定
-            RaycastHit2D hitWorkbench = Physics2D.Raycast(worldMousePosition, Vector2.zero, Camera.main.farClipPlane, mask);
-            if (hitWorkbench.collider != null)
+            for (int i = 1; i < workbenchChilds.Length; i++)
             {
-                HexInfomation infoOrigin = hitWorkbench.collider.GetComponent<HexInfomation>();
+                HexInfomation info_w = workbenchChilds[i].GetComponent<HexInfomation>();
+                info_w.canFitting = false;
+            }
+            canFit = false;
+            return;
+        }
 
-                for (int i = 1; i < workbenchChilds.Length; i++)
+        HexInfomation infoOrigin = hitWorkbench.collider.GetComponent<HexInfomation>();
+
+        for (int i = 1; i < workbenchChilds.Length; i++)
+        {
+            HexInfomation infoWB = workbenchChilds[i].GetComponent<HexInfomation>();  //
+
+            for (int j = 1; j < movementItemChilds.Length; j++)
+            {
+                HexInfomation infoItem = movementItemChilds[j].GetComponent<HexInfomation>();  //素材の六角座標の情報を取得する
+                judgeInfo.q = infoOrigin.q + infoItem.q;
+                judgeInfo.r = infoOrigin.r + infoItem.r;
+                judgeInfo.s = infoOrigin.s + infoItem.s;
+
+                if (judgeInfo.q == infoWB.q && judgeInfo.r == infoWB.r && judgeInfo.s == infoWB.s && !infoWB.isFitting)
                 {
-                    HexInfomation infoWB = workbenchChilds[i].GetComponent<HexInfomation>();  //
-
-                    for (int j = 1; j < movementItemChilds.Length; j++)
-                    {
-                        HexInfomation infoItem = movementItemChilds[j].GetComponent<HexInfomation>();  //素材の六角座標の情報を取得する
-                        judgeInfo.q = infoOrigin.q + infoItem.q;
-                        judgeInfo.r = infoOrigin.r + infoItem.r;
-                        judgeInfo.s = infoOrigin.s + infoItem.s;
-
-                        if(judgeInfo.q == infoWB.q && judgeInfo.r == infoWB.r && judgeInfo.s == infoWB.s && !infoWB.isFitting)
-                        {
-                            infoItem.canFitting = true;
-                            infoWB.canFitting = true;
-                            canFittingNum++;
-                            break;
-                        }
-                        else
-                        {
-                            infoItem.canFitting = false;
-                            infoWB.canFitting = false;
-                        }
-                    }
-                }
-
-                if(canFittingNum == movementItemChilds.Length-1)  //素材のピース数と同じときは置く
-                {
-                    //Debug.Log("置けます");
-                    canFit = true;
+                    infoItem.canFitting = true;
+                    infoWB.canFitting = true;
+                    canFittingCount++;
+                    break;
                 }
                 else
                 {
-                    canFit = false;
+                    infoItem.canFitting = false;
+                    infoWB.canFitting = false;
                 }
-            }
-            else
-            {
-                for (int i = 1; i < workbenchChilds.Length; i++)
-                {
-                    HexInfomation info_w = workbenchChilds[i].GetComponent<HexInfomation>();
-                    info_w.canFitting = false;
-                }
-                canFit = false;
             }
         }
+
+        if (canFittingCount == movementItemChilds.Length - 1)  //素材のピース数と同じときは置く
+        {
+            //Debug.Log("置けます");
+            canFit = true;
+        }
+        else
+        {
+            canFit = false;
+        }
+
     }
 
     void PutOnWorkbench()  //作業台に素材を置く

@@ -9,10 +9,8 @@ public class OrderManager : MonoBehaviour
     [SerializeField]
     Text orderText;
 
-    int[] usePieceNum = { 2, 4, 5, 7 };
-
-    List<ItemInfomation.ItemTaste> state;
-    List<int> pieceNum;
+    List<ItemInfomation.ItemTaste> tasteList;
+    List<int> pieceNumList;
 
     private bool isFinishing = false;
 
@@ -32,37 +30,30 @@ public class OrderManager : MonoBehaviour
     public void MakeOrder()
     {
         if (GameManager.instance.gamePlayingTimer <= 0) { return; }
-
-        state = new List<ItemInfomation.ItemTaste>();
-        pieceNum = new List<int>();
-
-        for (int i = 0; i < UnityEngine.Random.Range(2, 4); i++)  //注文の色を2種から3種までにする
+        int nextTasteTotal = UnityEngine.Random.Range(2, 4);  //注文の色を2種から3種までにする
+        List<ItemInfomation.ItemTaste> tasteInfos = new List<ItemInfomation.ItemTaste>()
         {
-            while (true)
-            {
-                ItemInfomation.ItemTaste addTaste = (ItemInfomation.ItemTaste)UnityEngine.Random.Range(0, Enum.GetValues(typeof(ItemInfomation.ItemTaste)).Length);
-                int addPieceNum = usePieceNum[UnityEngine.Random.Range(0, usePieceNum.Length)];
-                bool canAdd = true;
+            ItemInfomation.ItemTaste.Warmly,
+            ItemInfomation.ItemTaste.Icy,
+            ItemInfomation.ItemTaste.Fresh,
+            ItemInfomation.ItemTaste.Mellow,
+            ItemInfomation.ItemTaste.Richness
+        };
+        List<int> pieceNumInfos = new List<int>(){ 2, 4, 5, 7 };
 
-                for (int j = 0; j < state.Count; j++)  //同じ素材を二度以上指定しない
-                {
-                    if (state[j] == addTaste)
-                    {
-                        canAdd = false;
-                    }
-                    if(pieceNum[j] == addPieceNum)  //ピースの数を他の注文の量と同じにしない
-                    {
-                        canAdd = false;
-                    }
-                }
+        tasteList = new List<ItemInfomation.ItemTaste>();
+        pieceNumList = new List<int>();
 
-                if (canAdd)
-                {
-                    state.Add(addTaste);
-                    pieceNum.Add(addPieceNum);
-                    break;
-                }
-            }
+
+        for (int i = 0; i < nextTasteTotal; i++)
+        {
+            int tasteIndex = UnityEngine.Random.Range(0, tasteInfos.Count);
+            tasteList.Add(tasteInfos[tasteIndex]);
+            tasteInfos.RemoveAt(tasteIndex);
+
+            int pieceNumindex = UnityEngine.Random.Range(0, pieceNumInfos.Count);
+            pieceNumList.Add(pieceNumInfos[pieceNumindex]);
+            pieceNumInfos.RemoveAt(pieceNumindex);
         }
 
         UpdateOrderText();
@@ -73,28 +64,28 @@ public class OrderManager : MonoBehaviour
         if (GameManager.instance.gamePlayingTimer <= 0) { return; }
 
         orderText.text = "";
-        for (int i = 0; i < state.Count; ++i)
+        for (int i = 0; i < tasteList.Count; ++i)
         {
-            switch (state[i])
+            switch (tasteList[i])
             {
                 case ItemInfomation.ItemTaste.Warmly:
-                    orderText.text += "赤色 x " + pieceNum[i].ToString();
+                    orderText.text += "赤色 x " + pieceNumList[i].ToString();
                     break;
                 case ItemInfomation.ItemTaste.Icy:
-                    orderText.text += "水色 x " + pieceNum[i].ToString();
+                    orderText.text += "水色 x " + pieceNumList[i].ToString();
                     break;
                 case ItemInfomation.ItemTaste.Fresh:
-                    orderText.text += "青色 x " + pieceNum[i].ToString();
+                    orderText.text += "青色 x " + pieceNumList[i].ToString();
                     break;
                 case ItemInfomation.ItemTaste.Mellow:
-                    orderText.text += "薄茶色 x " + pieceNum[i].ToString();
+                    orderText.text += "薄茶色 x " + pieceNumList[i].ToString();
                     break;
                 case ItemInfomation.ItemTaste.Richness:
-                    orderText.text += "黄色 x " + pieceNum[i].ToString();
+                    orderText.text += "黄色 x " + pieceNumList[i].ToString();
                     break;
             }
 
-            if (i != state.Count - 1)
+            if (i != tasteList.Count - 1)
             {
                 orderText.text += ",  ";
             }
@@ -143,34 +134,34 @@ public class OrderManager : MonoBehaviour
         int totalPieceNum = 0; 
         int orderPieceNum = 0;
 
-        for (int j = 0;  j < state.Count; j++)  //注文と比較
+        for (int j = 0;  j < tasteList.Count; j++)  //注文と比較
         {
-            switch (state[j])
+            switch (tasteList[j])
             {
                 case ItemInfomation.ItemTaste.Warmly:
-                    calcNum += Calc(warmlyNum, pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Warmly)]);
+                    calcNum += Calc(warmlyNum, pieceNumList[tasteList.IndexOf(ItemInfomation.ItemTaste.Warmly)]);
                     totalPieceNum += warmlyNum;
-                    orderPieceNum += pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Warmly)];
+                    orderPieceNum += pieceNumList[tasteList.IndexOf(ItemInfomation.ItemTaste.Warmly)];
                     break;
                 case ItemInfomation.ItemTaste.Icy:
-                    calcNum = Calc(icyNum, pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Icy)]);
+                    calcNum = Calc(icyNum, pieceNumList[tasteList.IndexOf(ItemInfomation.ItemTaste.Icy)]);
                     totalPieceNum += icyNum;
-                    orderPieceNum += pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Icy)];
+                    orderPieceNum += pieceNumList[tasteList.IndexOf(ItemInfomation.ItemTaste.Icy)];
                     break;
                 case ItemInfomation.ItemTaste.Fresh:
-                    calcNum += Calc(freshNum, pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Fresh)]);
+                    calcNum += Calc(freshNum, pieceNumList[tasteList.IndexOf(ItemInfomation.ItemTaste.Fresh)]);
                     totalPieceNum += freshNum;
-                    orderPieceNum += pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Fresh)];
+                    orderPieceNum += pieceNumList[tasteList.IndexOf(ItemInfomation.ItemTaste.Fresh)];
                     break;
                 case ItemInfomation.ItemTaste.Mellow:
-                    calcNum += Calc(mellowNum, pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Mellow)]);
+                    calcNum += Calc(mellowNum, pieceNumList[tasteList.IndexOf(ItemInfomation.ItemTaste.Mellow)]);
                     totalPieceNum += mellowNum;
-                    orderPieceNum += pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Mellow)];
+                    orderPieceNum += pieceNumList[tasteList.IndexOf(ItemInfomation.ItemTaste.Mellow)];
                     break;
                 case ItemInfomation.ItemTaste.Richness:
-                    calcNum += Calc(richnessNum, pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Richness)]);
+                    calcNum += Calc(richnessNum, pieceNumList[tasteList.IndexOf(ItemInfomation.ItemTaste.Richness)]);
                     totalPieceNum += richnessNum;
-                    orderPieceNum += pieceNum[state.IndexOf(ItemInfomation.ItemTaste.Richness)];
+                    orderPieceNum += pieceNumList[tasteList.IndexOf(ItemInfomation.ItemTaste.Richness)];
                     break;
             }
         }

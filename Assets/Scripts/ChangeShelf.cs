@@ -10,15 +10,12 @@ public class ChangeShelf : MonoBehaviour
 
     public void OnChangeShelf(InputAction.CallbackContext context)
     {
-        if (context.started)
+        if (!context.started) { return; }
+        if (Keyboard.current.fKey.wasPressedThisFrame) { return; }
+
+        for (int i = 0; i < shelves.Length; i++)
         {
-            if (Keyboard.current.fKey.wasPressedThisFrame)
-            {
-                for (int i = 0; i < shelves.Length; i++)
-                {
-                    shelves[i].SetActive(!shelves[i].activeSelf);
-                }
-            }
+            shelves[i].SetActive(!shelves[i].activeSelf);
         }
     }
 }

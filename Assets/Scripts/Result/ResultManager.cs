@@ -24,14 +24,13 @@ public class ResultManager : GameSystems
     // Update is called once per frame
     void FixedUpdate()
     {
-        if(changeScene)
+        if(changeScene) { return; }
+
+        GameManager.instance.Init();
+        FadeOut(fadeImageObject, fadeImage);
+        if (fadeImage.color.a >= 1)
         {
-            GameManager.instance.Init();
-            FadeOut(fadeImageObject, fadeImage);
-            if (fadeImage.color.a >= 1)
-            {
-                LoadingScene();
-            }
+            LoadingScene();
         }
     }
 
