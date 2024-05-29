@@ -24,7 +24,7 @@ public class ResultManager : GameSystems
     // Update is called once per frame
     void FixedUpdate()
     {
-        if(changeScene) { return; }
+        if(!changeScene) { return; }
 
         GameManager.instance.Init();
         FadeOut(fadeImageObject, fadeImage);
